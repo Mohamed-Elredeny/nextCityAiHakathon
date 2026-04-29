@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vote QR — Next City AI Hackathon</title>
-    <link rel="icon" type="image/png" href="/img/aiu-logo.png">
+    <link rel="icon" type="image/png" href="{{ asset('img/aiu-logo.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -48,7 +48,7 @@
     <div class="card-3d rounded-3xl p-10 lg:p-16 max-w-2xl w-full text-center">
         <div class="flex items-center justify-center gap-4 mb-8">
             <div class="bg-white border border-[#ECEFF4] rounded-2xl p-3 w-20 h-20 flex items-center justify-center shadow-md">
-                <img src="/img/aiu-logo.png" alt="AIU" class="w-full h-full object-contain">
+                <img src="{{ asset('img/aiu-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
             </div>
             <div class="text-left leading-tight">
                 <p class="text-aiu-red font-bold uppercase tracking-[0.22em] text-[10px]">Alamein International University</p>
@@ -74,7 +74,7 @@
         </p>
 
         <div class="no-print mt-10 flex items-center justify-center gap-3">
-            <a href="/" class="inline-flex px-4 py-2 rounded-lg bg-white border border-[#E5E9F0] hover:bg-[#F4F7FB] text-sm font-semibold text-aiu-ink-700 transition">
+            <a href="{{ route('home') }}" class="inline-flex px-4 py-2 rounded-lg bg-white border border-[#E5E9F0] hover:bg-[#F4F7FB] text-sm font-semibold text-aiu-ink-700 transition">
                 ← Back
             </a>
             <button onclick="window.print()" class="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold text-white shadow-md

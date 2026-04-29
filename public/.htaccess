@@ -9,6 +9,9 @@
     </IfModule>
 
     RewriteEngine On
+    # We're served at aiu.edu.eg/hackathon/ — Apache enters this folder via the
+    # root .htaccess rewrite, so RewriteBase must include /hackathon/public/
+    RewriteBase /hackathon/public/
 
     # Pass the Authorization header through to PHP (Filament / Sanctum / API tokens)
     RewriteCond %{HTTP:Authorization} .

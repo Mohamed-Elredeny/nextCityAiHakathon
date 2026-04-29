@@ -138,7 +138,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-4">
                         <div class="logo-plate w-14 h-14 rounded-xl flex items-center justify-center p-2">
-                            <img src="/img/aiu-logo.png" alt="AIU" class="w-full h-full object-contain">
+                            <img src="{{ asset('img/aiu-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
                         </div>
                         <div>
                             <p class="text-aiu-red uppercase tracking-[0.32em] text-xs font-bold">Live Scoreboard</p>

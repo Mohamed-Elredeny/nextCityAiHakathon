@@ -31,7 +31,7 @@
             <h2 class="font-heading text-2xl font-bold text-aiu-ink-900 mt-2">Thanks @if ($voterName), {{ $voterName }}@endif!</h2>
             <p class="mt-3 text-aiu-ink-600">Your vote went to <span class="font-bold text-aiu-ink-900">{{ $myVoteTeamName }}</span>.</p>
             <p class="mt-2 text-xs text-aiu-ink-400">Results revealed at the awards ceremony.</p>
-            <a href="/" class="btn-soft inline-flex mt-6 px-5 py-2.5 rounded-lg font-semibold text-sm">
+            <a href="{{ route('home') }}" class="btn-soft inline-flex mt-6 px-5 py-2.5 rounded-lg font-semibold text-sm">
                 ← Back to leaderboard
             </a>
         </div>

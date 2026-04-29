@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Next City AI Hackathon — Leaderboard' }}</title>
 
-    <link rel="icon" type="image/png" href="/img/aiu-logo.png">
+    <link rel="icon" type="image/png" href="{{ asset('img/aiu-logo.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -200,9 +200,9 @@
     <header x-data="{ open: false }"
             class="bg-white/85 backdrop-blur-md border-b border-aiu-line sticky top-0 z-40 shadow-soft">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between gap-3 sm:gap-6">
-            <a href="/" class="flex items-center gap-3 group min-w-0">
+            <a href="{{ route('home') }}" class="flex items-center gap-3 group min-w-0">
                 <div class="logo-plate w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center p-2 group-hover:scale-105 transition-transform shrink-0">
-                    <img src="/img/aiu-logo.png" alt="AIU" class="w-full h-full object-contain">
+                    <img src="{{ asset('img/aiu-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
                 </div>
                 <div class="leading-tight min-w-0">
                     <p class="font-heading font-bold text-aiu-ink-900 text-sm sm:text-base truncate">
@@ -228,33 +228,33 @@
 
             {{-- Desktop nav --}}
             <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
-                <a href="/" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
+                <a href="{{ route('home') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
                 @auth
                     @if (auth()->user()->hasAnyRole(['team_leader', 'team_member']))
-                        <a href="/workspace" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Workspace</a>
+                        <a href="{{ route('workspace') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Workspace</a>
                     @endif
                     @if (auth()->user()->hasRole('judge'))
-                        <a href="/judge" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Judge</a>
+                        <a href="{{ route('judge') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Judge</a>
                     @endif
                     @if (auth()->user()->hasRole('mentor'))
-                        <a href="/mentor" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Mentor</a>
+                        <a href="{{ route('mentor') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Mentor</a>
                     @endif
                     @if (auth()->user()->hasRole('super_admin'))
-                        <a href="/admin" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Admin</a>
+                        <a href="{{ url('/admin') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Admin</a>
                     @endif
                     <span class="mx-2 h-5 w-px bg-aiu-line"></span>
                     <a href="{{ route('profile') }}" class="inline-flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-aiu-ink-50 transition" title="My profile">
                         <x-avatar :user="auth()->user()" size="sm" />
                         <span class="text-xs text-aiu-ink-700 font-semibold hidden lg:inline">{{ auth()->user()->name }}</span>
                     </a>
-                    <form method="POST" action="/logout" class="inline">
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
                         <button type="submit" class="px-3 py-2 rounded-lg text-aiu-ink-600 hover:text-aiu-red transition text-sm">
                             Sign out
                         </button>
                     </form>
                 @else
-                    <a href="/login" class="ml-2 px-4 py-2 rounded-lg btn-aiu text-sm font-semibold">Sign in</a>
+                    <a href="{{ route('login') }}" class="ml-2 px-4 py-2 rounded-lg btn-aiu text-sm font-semibold">Sign in</a>
                 @endauth
             </nav>
         </div>
@@ -270,31 +270,31 @@
              @click.outside="open = false"
              class="md:hidden border-t border-aiu-line bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col gap-1 text-sm font-medium">
-                <a href="/" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
+                <a href="{{ route('home') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
                 @auth
                     @if (auth()->user()->hasAnyRole(['team_leader', 'team_member']))
-                        <a href="/workspace" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Workspace</a>
+                        <a href="{{ route('workspace') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Workspace</a>
                     @endif
                     @if (auth()->user()->hasRole('judge'))
-                        <a href="/judge" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Judge</a>
+                        <a href="{{ route('judge') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Judge</a>
                     @endif
                     @if (auth()->user()->hasRole('mentor'))
-                        <a href="/mentor" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Mentor</a>
+                        <a href="{{ route('mentor') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Mentor</a>
                     @endif
                     @if (auth()->user()->hasRole('super_admin'))
-                        <a href="/admin" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Admin</a>
+                        <a href="{{ url('/admin') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Admin</a>
                     @endif
                     <a href="{{ route('profile') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">My profile</a>
                     <div class="my-1 h-px bg-aiu-line"></div>
                     <p class="px-3 pt-1 pb-2 text-[11px] text-aiu-ink-400">Signed in as <span class="text-aiu-ink-700 font-semibold">{{ auth()->user()->name }}</span></p>
-                    <form method="POST" action="/logout">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-left px-3 py-2.5 rounded-lg text-aiu-ink-600 hover:text-aiu-red hover:bg-aiu-ink-50 transition">
                             Sign out
                         </button>
                     </form>
                 @else
-                    <a href="/login" @click="open = false" class="mt-1 px-4 py-2.5 rounded-lg btn-aiu text-sm font-semibold text-center">Sign in</a>
+                    <a href="{{ route('login') }}" @click="open = false" class="mt-1 px-4 py-2.5 rounded-lg btn-aiu text-sm font-semibold text-center">Sign in</a>
                 @endauth
             </div>
         </nav>
