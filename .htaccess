@@ -1,54 +1,17 @@
 # =============================================================================
-# Root .htaccess — for /var/www/html/hackathon (served at aiu.edu.eg/hackathon)
+# Root .htaccess — DELIBERATELY MINIMAL
 #
-# Pairs with the root index.php that bootstraps Laravel from this directory.
-# Static assets (css, js, img, fonts, the storage symlink) still live inside
-# public/ — this .htaccess transparently serves them from there.
+# In production we use an Apache vhost Alias (/hackathon → public/) so this
+# file is not needed for routing. Keeping it ONLY to block direct access if
+# anyone ever browses /var/www/html/hackathon/ directly.
+#
+# vhost config: docs/deployment/hackathon-apache.conf
+# Routing happens entirely in public/.htaccess.
 # =============================================================================
 
-<IfModule mod_rewrite.c>
-    Options -Indexes -MultiViews +FollowSymLinks
+Options -Indexes -MultiViews
 
-    RewriteEngine On
-    RewriteBase /hackathon/
-
-    # ---- Pass auth/csrf headers through to PHP -----------------------------
-    RewriteCond %{HTTP:Authorization} .
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-    RewriteCond %{HTTP:x-xsrf-token} .
-    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
-
-    # ---- Force HTTPS (uncomment after the SSL cert is provisioned) ---------
-    # RewriteCond %{HTTPS} !=on
-    # RewriteCond %{HTTP:X-Forwarded-Proto} !https
-    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
-    # ---- Drop trailing slash on non-folder URLs ----------------------------
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
-
-    # ---- If a user typed /public/... explicitly, redirect away -------------
-    RewriteCond %{THE_REQUEST} \s/hackathon/public/(.*)\sHTTP [NC]
-    RewriteRule ^ /hackathon/%1 [L,R=301]
-
-    # ---- Serve static assets from public/ ----------------------------------
-    # Anything that physically exists inside public/ (css, js, img, favicon,
-    # robots.txt, the storage symlink, fonts, etc.) is served from there.
-    RewriteCond %{DOCUMENT_ROOT}/hackathon/public/$1 -f
-    RewriteRule ^(.+)$ public/$1 [L]
-    RewriteCond %{DOCUMENT_ROOT}/hackathon/public/$1 -d
-    RewriteRule ^(.+)$ public/$1 [L]
-
-    # ---- Everything else → Laravel via root index.php ----------------------
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
-</IfModule>
-
-# -----------------------------------------------------------------------------
-# Block direct access to sensitive files
-# -----------------------------------------------------------------------------
+# Block direct access to sensitive files / directories
 <FilesMatch "^\.">
     Require all denied
 </FilesMatch>
@@ -61,15 +24,6 @@
     Require all denied
 </FilesMatch>
 
-# Block direct browsing of Laravel internals
-RedirectMatch 403 ^/hackathon/(app|bootstrap|config|database|resources|routes|tests|vendor|nextCityAiHakathon)(/|$)
-
-# storage/ MUST stay blocked (logs, sessions, cache live there)
-RedirectMatch 403 ^/hackathon/storage(/|$)
-
-# index.php at the root is the entry point — keep it readable
-<Files "index.php">
-    Require all granted
-</Files>
+RedirectMatch 403 ^/hackathon/(app|bootstrap|config|database|resources|routes|storage|tests|vendor|nextCityAiHakathon)(/|$)
 
 AddDefaultCharset UTF-8
