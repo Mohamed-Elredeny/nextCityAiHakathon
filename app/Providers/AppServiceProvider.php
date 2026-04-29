@@ -31,14 +31,16 @@ class AppServiceProvider extends ServiceProvider
         // we live at /hackathon/livewire/*. Re-register both routes under the
         // path component of APP_URL so the script tag and the update endpoint
         // both resolve correctly behind the alias.
-        $prefix = trim(parse_url((string) config('app.url'), PHP_URL_PATH) ?? '', '/');
-        if ($prefix !== '') {
-            Livewire::setUpdateRoute(function ($handle) use ($prefix) {
-                return Route::post("/{$prefix}/livewire/update", $handle);
-            });
-            Livewire::setScriptRoute(function ($handle) use ($prefix) {
-                return Route::get("/{$prefix}/livewire/livewire.js", $handle);
-            });
+        if (! $this->app->runningInConsole()) {
+            $prefix = trim(parse_url((string) config('app.url'), PHP_URL_PATH) ?? '', '/');
+            if ($prefix !== '') {
+                Livewire::setUpdateRoute(function ($handle) use ($prefix) {
+                    return Route::post("/{$prefix}/livewire/update", $handle);
+                });
+                Livewire::setScriptRoute(function ($handle) use ($prefix) {
+                    return Route::get("/{$prefix}/livewire/livewire.js", $handle);
+                });
+            }
         }
     }
 }
