@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,20 @@ class AppServiceProvider extends ServiceProvider
             if (filled($appUrl)) {
                 URL::forceRootUrl($appUrl);
             }
+        }
+
+        // Sub-URI deployment: Livewire registers /livewire/* by default, but
+        // we live at /hackathon/livewire/*. Re-register both routes under the
+        // path component of APP_URL so the script tag and the update endpoint
+        // both resolve correctly behind the alias.
+        $prefix = trim(parse_url((string) config('app.url'), PHP_URL_PATH) ?? '', '/');
+        if ($prefix !== '') {
+            Livewire::setUpdateRoute(function ($handle) use ($prefix) {
+                return Route::post("/{$prefix}/livewire/update", $handle);
+            });
+            Livewire::setScriptRoute(function ($handle) use ($prefix) {
+                return Route::get("/{$prefix}/livewire/livewire.js", $handle);
+            });
         }
     }
 }
