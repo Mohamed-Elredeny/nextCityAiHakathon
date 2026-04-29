@@ -1,0 +1,58 @@
+# =============================================================================
+# Laravel root .htaccess — for cPanel / shared hosting deployment
+#
+# Use this file when you upload the WHOLE Laravel project into public_html/
+# (or into a sub-folder like public_html/app/). This routes every request
+# through the public/ folder while blocking direct access to app code, config,
+# vendor, storage, .env, etc.
+#
+# If you instead moved public/* into public_html/ and the rest of the project
+# lives outside public_html (the "split" cPanel setup), DELETE this file —
+# only public_html/.htaccess (= the existing public/.htaccess) is needed.
+# =============================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Force HTTPS (uncomment after the SSL cert is installed in cPanel)
+    # RewriteCond %{HTTPS} !=on
+    # RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Strip "public/" from URLs the user typed manually
+    RewriteCond %{THE_REQUEST} \s/public/(.*)\sHTTP [NC]
+    RewriteRule ^ /%1 [L,R=301]
+
+    # Pipe everything else through public/index.php
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# Block direct access to sensitive paths (defense in depth — the rewrites above
+# already prevent normal browsing, but this stops any direct probe).
+# -----------------------------------------------------------------------------
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "(?i)\.(env|env\..*|log|md|json|lock|yml|yaml|xml|sql|sqlite|bak|swp|sh|ini|conf|dist|example)$">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "(?i)^(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|webpack\.mix\.js|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|README|LICENSE)$">
+    Require all denied
+</FilesMatch>
+
+# Block direct browsing of app/, config/, database/, routes/, storage/, tests/, vendor/, bootstrap/cache
+RedirectMatch 403 ^/(app|bootstrap|config|database|resources|routes|storage|tests|vendor)(/|$)
+
+Options -Indexes -MultiViews
+
+# Use the highest-available PHP version on cPanel (override per-host as needed)
+<IfModule mime_module>
+    AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
+</IfModule>
+
+# UTF-8 by default
+AddDefaultCharset UTF-8

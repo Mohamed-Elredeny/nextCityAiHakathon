@@ -1,3 +1,8 @@
+# =============================================================================
+# public/.htaccess — Laravel front controller
+# Hardened for cPanel / shared hosting. Pair with the root .htaccess.
+# =============================================================================
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
@@ -5,21 +10,96 @@
 
     RewriteEngine On
 
-    # Handle Authorization Header
+    # Pass the Authorization header through to PHP (Filament / Sanctum / API tokens)
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Handle X-XSRF-Token Header
+    # Pass X-XSRF-Token through for Livewire / Filament POSTs
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Redirect Trailing Slashes If Not A Folder...
+    # Force HTTPS (uncomment once the SSL cert is provisioned)
+    # RewriteCond %{HTTPS} !=on
+    # RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Drop trailing slash on non-folder URLs (canonicalisation)
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
+    # Send everything that isn't a real file/dir to the front controller
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# -----------------------------------------------------------------------------
+# Security headers
+# -----------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+    # Enable HSTS only AFTER you've confirmed HTTPS works site-wide.
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# Compression — gzip/deflate where supported
+# -----------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE \
+        text/html text/plain text/css text/javascript text/xml \
+        application/javascript application/json application/xml \
+        application/xhtml+xml application/rss+xml \
+        image/svg+xml font/ttf font/otf application/font-woff application/font-woff2
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# Browser caching for built assets (Vite output, fonts, images)
+# Hashed Vite filenames make far-future caching safe.
+# -----------------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault                              "access plus 1 hour"
+
+    ExpiresByType text/css                      "access plus 1 year"
+    ExpiresByType application/javascript        "access plus 1 year"
+    ExpiresByType image/jpeg                    "access plus 1 year"
+    ExpiresByType image/png                     "access plus 1 year"
+    ExpiresByType image/webp                    "access plus 1 year"
+    ExpiresByType image/avif                    "access plus 1 year"
+    ExpiresByType image/svg+xml                 "access plus 1 year"
+    ExpiresByType image/x-icon                  "access plus 1 year"
+    ExpiresByType font/woff                     "access plus 1 year"
+    ExpiresByType font/woff2                    "access plus 1 year"
+    ExpiresByType application/font-woff         "access plus 1 year"
+    ExpiresByType application/font-woff2        "access plus 1 year"
+
+    # HTML / JSON revalidate so deploys roll out instantly
+    ExpiresByType text/html                     "access plus 0 seconds"
+    ExpiresByType application/json              "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Mark hashed assets as immutable to skip even conditional GETs
+    <FilesMatch "\.(css|js|woff2?|ttf|otf|jpg|jpeg|png|webp|avif|svg|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
+# -----------------------------------------------------------------------------
+# Block access to sensitive files (defense in depth)
+# -----------------------------------------------------------------------------
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "(?i)\.(env|env\..*|log|md|lock|sql|sqlite|bak|swp|sh|ini|conf|dist|example)$">
+    Require all denied
+</FilesMatch>
+
+# Default character set
+AddDefaultCharset UTF-8
