@@ -2,7 +2,7 @@
     <div class="card-3d rounded-2xl p-8">
         <div class="text-center mb-7">
             <div class="logo-plate inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 p-2.5">
-                <img src="{{ asset('img/aiu-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
+                <img src="{{ asset('img/aec-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
             </div>
             <p class="text-aiu-red uppercase tracking-[0.28em] text-[11px] font-bold mb-2">Participant Sign In</p>
             <h1 class="font-heading font-bold text-3xl text-aiu-ink-900">Welcome back</h1>
@@ -32,8 +32,5 @@
             </button>
         </form>
 
-        <p class="mt-6 text-center text-xs text-aiu-ink-400">
-            ACIE staff? Use the <a href="{{ url('/admin/login') }}" class="text-aiu-red hover:underline font-semibold">admin sign-in</a>.
-        </p>
     </div>
 </div>

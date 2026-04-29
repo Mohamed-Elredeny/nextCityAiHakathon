@@ -26,17 +26,22 @@ class ParticipantLogin extends Component
 
         request()->session()->regenerate();
 
+        // Pick the canonical landing page for this user's role. We don't use
+        // ->intended() here because if the user typed /admin first (got bounced
+        // to /login as a guest), Laravel would send a judge back to /admin —
+        // a panel they have no permission for.
         $user = Auth::user();
-        if ($user->hasRole('super_admin')) {
-            return redirect()->intended('/admin');
-        }
-        if ($user->hasRole('judge')) {
-            return redirect()->intended('/judge');
-        }
-        if ($user->hasRole('mentor')) {
-            return redirect()->intended('/mentor');
-        }
-        return redirect()->intended('/workspace');
+        $target = match (true) {
+            $user->hasRole('super_admin') => '/admin',
+            $user->hasRole('judge')       => '/judge',
+            $user->hasRole('mentor')      => '/mentor',
+            default                       => '/workspace',
+        };
+
+        // Forget any stale "intended" URL from the redirect cycle.
+        request()->session()->forget('url.intended');
+
+        return redirect($target);
     }
 
     #[Layout('components.layouts.public')]

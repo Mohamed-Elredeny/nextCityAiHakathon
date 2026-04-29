@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'Next City AI Hackathon — Leaderboard' }}</title>
 
-    <link rel="icon" type="image/png" href="{{ asset('img/aiu-logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('img/aec-logo.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -202,7 +202,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between gap-3 sm:gap-6">
             <a href="{{ route('home') }}" class="flex items-center gap-3 group min-w-0">
                 <div class="logo-plate w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center p-2 group-hover:scale-105 transition-transform shrink-0">
-                    <img src="{{ asset('img/aiu-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
+                    <img src="{{ asset('img/aec-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
                 </div>
                 <div class="leading-tight min-w-0">
                     <p class="font-heading font-bold text-aiu-ink-900 text-sm sm:text-base truncate">
@@ -308,6 +308,11 @@
         <div class="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-aiu-ink-600">
             <p>© {{ date('Y') }} Alamein International University · Center for Innovation &amp; Entrepreneurship</p>
             <p class="font-heading tracking-wide text-aiu-ink-700">Next City AI Hackathon · El Alamein, Egypt</p>
+        </div>
+        <div class="border-t border-aiu-line/60 bg-aiu-ink-50/40">
+            <div class="max-w-7xl mx-auto px-6 lg:px-8 py-3 text-center text-[11px] text-aiu-ink-500">
+                Developed by <span class="font-semibold text-aiu-ink-700">Mohamed Elredeny</span> · TA <span class="text-aiu-red">@AIU</span>
+            </div>
         </div>
     </footer>
 

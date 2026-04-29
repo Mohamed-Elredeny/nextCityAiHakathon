@@ -42,9 +42,9 @@ class AdminPanelProvider extends PanelProvider
                 'success' => Color::Emerald,
                 'info' => Color::hex('#0F4778'),
             ])
-            ->brandLogo(asset('img/aiu-logo.png'))
+            ->brandLogo(asset('img/aec-logo.png'))
             ->brandLogoHeight('2.5rem')
-            ->favicon(asset('img/aiu-logo.png'))
+            ->favicon(asset('img/aec-logo.png'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

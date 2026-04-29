@@ -2,7 +2,7 @@
     <header class="flex items-center justify-between px-12 py-7 border-b border-aiu-line bg-white/85 backdrop-blur-md">
         <div class="flex items-center gap-5">
             <div class="logo-plate w-20 h-20 rounded-2xl flex items-center justify-center p-3">
-                <img src="{{ asset('img/aiu-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
+                <img src="{{ asset('img/aec-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
             </div>
             <div>
                 <p class="text-aiu-red uppercase tracking-[0.32em] text-xs font-bold">Alamein International University</p>
