@@ -20,13 +20,21 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    public function boot(): void
+    {
+        // Re-route Filament's "you must log in" redirect to the unified /login.
+        Authenticate::redirectUsing(fn () => route('login'));
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            // Filament's built-in /admin/login is intentionally disabled.
+            // The single sign-in for ALL roles is the participant /login page,
+            // which redirects super_admin users straight to /admin.
             ->colors([
                 'primary' => Color::hex('#C8102E'),
                 'danger' => Color::hex('#C8102E'),
