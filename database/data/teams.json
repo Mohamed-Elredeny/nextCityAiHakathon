@@ -1,0 +1,819 @@
+{
+  "teams": [
+    {
+      "team_name": "AIriScan",
+      "registrants": [
+        {
+          "full_name": "youssef mohamed moharm mohamed ",
+          "email": "yy4472285@gmail.com",
+          "phone": "01229392276",
+          "institution": "Alamein international university ",
+          "field": "Computer Science ",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Healthcare",
+          "skills": "AI / Machine Learning;Data Science;Software Development;UI/UX Design;Healthcare / Medical;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-28 20:43:18",
+          "problem": "Millions delay eye disease diagnosis due to limited access to doctors and neglect. Our AI detects early eye conditions and connects users to nearby doctors and pharmacies instantly "
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Allmanda",
+      "registrants": [
+        {
+          "full_name": "Mohamed Saeed Mohamed ",
+          "email": "mohamed.abdelwahab@aiu.edu.eg",
+          "phone": "01501690011",
+          "institution": "Allmanda Cosmetics ",
+          "field": "Pharm D",
+          "role_in_team": "Business Lead",
+          "track": "Smart Healthcare",
+          "skills": "Business / Marketing;Healthcare / Medical;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-23 16:05:52",
+          "problem": "Natural products for skin and hair care with economic value "
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Aqua guards",
+      "registrants": [
+        {
+          "full_name": "Zeinab Ahmed Ebrahim Osman Ebrahim",
+          "email": "zeinab.osman.2025@aiu.edu.eg",
+          "phone": "01204910524",
+          "institution": "Alamein International University",
+          "field": "Biomedical Engineering",
+          "role_in_team": "Researcher",
+          "track": "Smart Healthcare",
+          "skills": "AI / Machine Learning;Healthcare / Medical;Data Science;Business / Marketing;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-25 14:48:56",
+          "problem": "Smart AI-powered wearable band that detects drowning or distress in real time and alerts lifeguards with location, enabling faster response and improving beach safety in crowded areas."
+        },
+        {
+          "full_name": "Mazen Mohamed El-Sayed Abdelsalam",
+          "email": "mazen.abdelsalam.2024@aiu.edu.eg",
+          "phone": "01229427498",
+          "institution": "Al Alamein International University ",
+          "field": "Mechatronics Engineering ",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Healthcare",
+          "skills": "3D Modeling - programming - CAD Softwares - Microsoft Office ;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-25 18:48:12",
+          "problem": "Smart AI-powered wearable band that detects drowning or distress in real time and alerts lifeguards with location, enabling faster response and improving beach safety in crowded areas"
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Aysha Mohamed",
+      "registrants": [
+        {
+          "full_name": "Nour walid mohamed abdelhalim ",
+          "email": "nourwaled245@gmail.com",
+          "phone": "01026205013",
+          "institution": "Alamein international university ",
+          "field": "Computer science ",
+          "role_in_team": "Developer",
+          "track": "Smart Healthcare",
+          "skills": "Software Development;Healthcare / Medical;AI / Machine Learning;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-19 15:22:52",
+          "problem": "1. Need for Automation\n2. Early Detection and Prevention of Vision Loss.\n3. Increased Accuracy Over Manual Assessments\n4. False Negatives\n5. Patient Empowerment and Education"
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Bioaxiom",
+      "registrants": [
+        {
+          "full_name": "Fatima Elzahraa Alaa Amin ",
+          "email": "fatima.amin.2025@aiu.edu.eg",
+          "phone": "01006948027",
+          "institution": "Engineering science ",
+          "field": "Biomedical engineer ",
+          "role_in_team": "Business Lead",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "Healthcare / Medical; IoT / Hardware;Business / Marketing;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-26 22:44:22",
+          "problem": "AI-driven IoT ecosystem transforming urban spaces into smart bio-hubs. Using precision sensors to monitor plant health in real-time, we bridge the gap between engineering and sustainable nature."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "biomedical coders",
+      "registrants": [
+        {
+          "full_name": "Jana mamdouh hassan moustafa hegazy ",
+          "email": "jana.moustafa.2024@aiu.edu.eg",
+          "phone": "01211656988",
+          "institution": "Alamein international university ",
+          "field": "Computer science ",
+          "role_in_team": "Developer",
+          "track": "Smart Healthcare",
+          "skills": "AI / Machine Learning;Data Science;Software Development;UI/UX Design;Healthcare / Medical;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-20 15:23:04",
+          "problem": "Anemia affects millions worldwide. This project uses AI, computer vision, and machine learning to analyze eye images for early, non-invasive anemia detection."
+        },
+        {
+          "full_name": "Anas abdelmoneim khameis radwan ",
+          "email": "anas.mohamed.2025@aiu.edu.eg",
+          "phone": "01554219242",
+          "institution": "Alamein international university ",
+          "field": "Computer engineering",
+          "role_in_team": "Designer",
+          "track": "Health Promotion",
+          "skills": "AI / Machine Learning;UI/UX Design;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-22 17:34:12",
+          "problem": "Anemia affects millions worldwide. This project uses Al, computer vision, and machine learning to analyze eye images for early, non-invasive anemia detection."
+        },
+        {
+          "full_name": "Jana Hazem Hegazi Mohamed",
+          "email": "jana.hazem.2024@aiu.edu.eg",
+          "phone": "01020605479",
+          "institution": "Alamien international university",
+          "field": "computer science and engineering",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Healthcare",
+          "skills": "AI / Machine Learning;Data Science;Software Development;UI/UX Design; IoT / Hardware;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-23 15:36:03",
+          "problem": "Anemia affects millions worldwide. This project uses AI, computer vision and machine learning to analyze eye images for early, non-invasive anemia detection."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "ecomind ai",
+      "registrants": [
+        {
+          "full_name": "Rowan Mohamed Yehia Aly",
+          "email": "rowan.elsayed.2023@aiu.edu.eg",
+          "phone": "01022850683",
+          "institution": "Alamein international University",
+          "field": "faculty of Basic Sciences Department of Molecular Biotechnology  (with interest in AI applications in Smart Cities & Sustainability)",
+          "role_in_team": "Researcher",
+          "track": "Smart Healthcare",
+          "skills": "Data Science;Business / Marketing;Healthcare / Medical;AI / Machine Learning;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-29 00:36:36",
+          "problem": "Smart BioBasket: A smart framework that classifies urban organic waste at the source. It evaluates waste for bio-conversion and provides real-time data to optimize city logistics and sustainability."
+        }
+      ],
+      "declared_members": [
+        "Rowan Mohamed Yehia Aly Elsayed",
+        "Hagar Mohamed Yehia Aly Elsayed"
+      ]
+    },
+    {
+      "team_name": "FlowAxis",
+      "registrants": [
+        {
+          "full_name": "Kerolos Nader",
+          "email": "kfparody809@gmail.com",
+          "phone": "01032564982",
+          "institution": "Alamein International University ",
+          "field": "Computer science and engineering ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Data Science;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-20 23:55:04",
+          "problem": "AI-powered traffic management system for Egypt’s North Coast. Predicts congestion hotspots using ML, shows real-time heatmaps, and provides smart alerts for admins and route suggestions for guests."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Genesis",
+      "registrants": [
+        {
+          "full_name": "ahmed ebrahem hamdy abdelzaher ",
+          "email": "ahmedebrahem7111@gmail.com",
+          "phone": "01004696345",
+          "institution": "aiu",
+          "field": "computer science",
+          "role_in_team": "Developer",
+          "track": " Industry Challenges",
+          "skills": "AI / Machine Learning;Software Development;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-17 16:35:13",
+          "problem": "Industrial systems struggle with dynamic energy costs and rigid control. Opti-Twin uses AI and a Digital Twin to optimize energy, machine health, and production in real time efficiently"
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Hack Elite",
+      "registrants": [
+        {
+          "full_name": "Mohamed maher muossa",
+          "email": "m0.maher02006@gmail.com",
+          "phone": "01555042359",
+          "institution": "AIU",
+          "field": "Computer Science",
+          "role_in_team": "Developer",
+          "track": "Smart Healthcare",
+          "skills": "Software Development;",
+          "skill_level": "Beginner",
+          "submitted_at": "2026-04-19 18:26:42",
+          "problem": "​AI-driven HealthTech platform for mental and chronic care. Features educational content and an AI companion for daily routine advice and therapy-like support to improve patient well-being"
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Health Hackers",
+      "registrants": [
+        {
+          "full_name": "Nourhan Nasr Mohammed ",
+          "email": "nourhan.gamal.2026@aiu.edu.eg",
+          "phone": "+201110494037",
+          "institution": "Alamian international University ",
+          "field": "computer Engineering ",
+          "role_in_team": "Developer",
+          "track": "Health Promotion",
+          "skills": "Software Development;UI/UX Design; IoT / Hardware;Business / Marketing;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-28 22:13:25",
+          "problem": "Health apps feel repetitive and isolating, causing users to lose motivation. Our solution is a gamified social platform with challenges and rewards to make healthy habits engaging."
+        }
+      ],
+      "declared_members": [
+        "Nourhan nasr mohammed",
+        "Asmaa Ibrahim",
+        "Ziad mahmoud elsayed"
+      ]
+    },
+    {
+      "team_name": "healthcode",
+      "registrants": [
+        {
+          "full_name": "Noreen Osama Youssry Abdelwahab ",
+          "email": "noreen.abdelwahab.2024@aiu.edu.eg",
+          "phone": "01559733797",
+          "institution": "Alamein International University ",
+          "field": "AI",
+          "role_in_team": "Business Lead",
+          "track": "Smart Healthcare",
+          "skills": "AI / Machine Learning;Data Science;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-22 01:52:23",
+          "problem": "Crowded coastal cities face sudden health risks with no unified medical data. Care is reactive, not predictive, leading to delayed response, overloaded clinics, and preventable emergencies"
+        },
+        {
+          "full_name": "Hana Sherif Abdelmoneim Mohamed Elenshasy",
+          "email": "hana.elanshassy2@gmail.com",
+          "phone": "01211876634",
+          "institution": "Alamein International University",
+          "field": "Artificial Intelligence Science",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Healthcare",
+          "skills": "AI / Machine Learning;Software Development;Data Science;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-22 01:53:04",
+          "problem": "Crowded coastal cities face sudden health risks with no unified medical data. Care is reactive, not predictive leading to delayed response, overloaded clinics, and preventable emergencies"
+        },
+        {
+          "full_name": "Ammar Mahmoud Eid Ahmed ",
+          "email": "ammar.ahmed.2024@aiu.edu.eg",
+          "phone": "01062065198",
+          "institution": "AIU",
+          "field": "Software engineering ",
+          "role_in_team": "Designer",
+          "track": "Smart Healthcare",
+          "skills": "Software Development;AI / Machine Learning;UI/UX Design;Business / Marketing;Software engineering , Software Testing ;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-22 01:53:06",
+          "problem": "Crowded coastal cities face sudden health risks with no unified medical data. Care is reactive, not predictive leading to delayed response, overloaded clinics, and preventable emergencies"
+        },
+        {
+          "full_name": "Hany Ziad Abdelaal Mohamed",
+          "email": "mohamed",
+          "phone": "01275316703",
+          "institution": "Alamein International University",
+          "field": "Artificial intelligence science",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Healthcare",
+          "skills": "AI / Machine Learning;Data Science;Software Development;",
+          "skill_level": "Advanced",
+          "submitted_at": "2026-04-22 01:53:07",
+          "problem": "crowded coastal cities face sudden health risks with no unified medical data. Care is reactive, not predictive leading to delayed response, overloaded clinics, and preventable emergencies"
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Lacoste",
+      "registrants": [
+        {
+          "full_name": "Mahmoud Mohamed kamel",
+          "email": "mahmoud.kamel.2023@aiu.edu.eg",
+          "phone": "22101160",
+          "institution": "Alamein international university ",
+          "field": "Artificial intelligence science ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Software Development;Data Science;UI/UX Design;Business / Marketing;",
+          "skill_level": "Advanced",
+          "submitted_at": "2026-04-17 10:43:44",
+          "problem": "No problem statement yet."
+        }
+      ],
+      "declared_members": [
+        "Mohamed Mahfouz",
+        "Mohamed Abo Hassan",
+        "Abdelrhman handy",
+        "seif Ahmed"
+      ]
+    },
+    {
+      "team_name": "Loop",
+      "registrants": [
+        {
+          "full_name": "mohamed mohamed alsariti",
+          "email": "mohamed.alsariti.2023@aiu.edu.eg",
+          "phone": "01094868049",
+          "institution": "Aiu",
+          "field": "computer science (software) ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "Software Development;UI/UX Design;Business / Marketing;",
+          "skill_level": "Advanced",
+          "submitted_at": "2026-04-28 22:51:56",
+          "problem": "A real-time mobile app tracking buses, shuttles & light rail via GPS. Features live arrivals, occupancy alerts, trip planning & smart sensor integration for seamless, sustainable urban mobility."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Mariam nada yousef",
+      "registrants": [
+        {
+          "full_name": "Yousef mohamed fouad ",
+          "email": "youssef.fouad.2026@aiu.edu.eg",
+          "phone": "01212671057",
+          "institution": "Aiu",
+          "field": "Computer science and Engineering ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Software Development;Business / Marketing;",
+          "skill_level": "Beginner",
+          "submitted_at": "2026-04-18 17:12:28",
+          "problem": "I don't know more but I well go a head I have a good experience in java and Ai "
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "NextGen AI",
+      "registrants": [
+        {
+          "full_name": "Abdalla tarek ",
+          "email": "abdalla.ebrahim.2025@aiu.edu.eg",
+          "phone": "01069490031",
+          "institution": "Aihack",
+          "field": "Ai",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Software Development;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-28 23:49:52",
+          "problem": "An AI-powered smart traffi management system that uses cameras and sensors to reduce traffic congestion, optimize traffic lights, and improve emergency response time. "
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Nomeda",
+      "registrants": [
+        {
+          "full_name": "Abdallah Basem Zain ",
+          "email": "abdallahbasemzain@outlook.com",
+          "phone": "01551934703",
+          "institution": "Alamein International University",
+          "field": "Artificial intelligence science",
+          "role_in_team": "Developer",
+          "track": "Smart Healthcare",
+          "skills": "AI / Machine Learning;Software Development;Data Science;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-17 19:48:27",
+          "problem": "MSTE is an emotion-aware AI platform using audio, visual, and biometric data to deliver empathetic, evidence-based mental health support with real-time insights.\n"
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Nour Maged Ahmed",
+      "registrants": [
+        {
+          "full_name": "Shimaa Elsaied Ibrahim Muhammad ",
+          "email": "shaimaa.mohamed.2024@aiu.edu.eg",
+          "phone": "01116429774",
+          "institution": "Alamein international University ",
+          "field": "Clinical pharmacy ",
+          "role_in_team": "Researcher",
+          "track": "Health Promotion",
+          "skills": "Healthcare / Medical;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-23 16:22:37",
+          "problem": "."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Number of Members : 4",
+      "registrants": [
+        {
+          "full_name": "Ahmed Ezzelragal Abdallah Salama",
+          "email": "أحمد عز الرجال عبدالله سلامه",
+          "phone": "01022023881",
+          "institution": "Alamein International",
+          "field": "Engineer",
+          "role_in_team": "Designer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-23 19:33:33",
+          "problem": "Smart AI-powered wearable band that detects drowning or distress in real time and alerts lifeguards with location, enabling faster response and improving beach safety in crowded areas"
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Octelligence",
+      "registrants": [
+        {
+          "full_name": "Abdallah Ahmed Mahmoud Lasheen ",
+          "email": "abdalla.lasheen.2023@aiu.edu.eg",
+          "phone": "01003527328",
+          "institution": "AIU",
+          "field": "AIS",
+          "role_in_team": "Researcher",
+          "track": "Smart Healthcare",
+          "skills": "AI / Machine Learning;Healthcare / Medical;",
+          "skill_level": "Advanced",
+          "submitted_at": "2026-04-19 23:09:25",
+          "problem": "Late diagnosis of AMD/DME causes blindness. Octelligence uses AI to predict disease progression from OCT scans, enabling early intervention to preserve vision and improve patient outcomes."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "PharmaChain AI",
+      "registrants": [
+        {
+          "full_name": "Mostafa Amr Adly Hassan Adham ",
+          "email": "mostafaamr14@gmail.com",
+          "phone": "01286832456",
+          "institution": "PharmaChain AI",
+          "field": "Pharmacy",
+          "role_in_team": "Designer",
+          "track": "Smart Healthcare",
+          "skills": "Healthcare / Medical;Business / Marketing;",
+          "skill_level": "Advanced",
+          "submitted_at": "2026-04-22 18:47:47",
+          "problem": "PharmaChain AI is an intelligent platform that connects pharmacies with suppliers through a unified digital ordering system. With an integrated smart forecasting solution."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "rasid",
+      "registrants": [
+        {
+          "full_name": "Shrouq Waleed Saeed Mohamed Hussein",
+          "email": "shrouqwaleed7@gmail.com",
+          "phone": "+201155524719",
+          "institution": "Alamein International University ",
+          "field": "Artificial Intelligence ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Data Science;Software Development;UI/UX Design; IoT / Hardware;Healthcare / Medical;",
+          "skill_level": "Advanced",
+          "submitted_at": "2026-04-17 23:36:43",
+          "problem": "Egypt loses 0.46 km² of coastline yearly, with 84M people at risk by 2100. Rasid uses satellite imagery and ML to monitor erosion in real-time and deliver early warnings before it’s too late."
+        },
+        {
+          "full_name": "mahmoud mohamed fathy",
+          "email": "mahmoud.fathy.2024@aiu.edu.eg",
+          "phone": "01062927729",
+          "institution": "Alalamin international universty",
+          "field": "Artificial Intelligence Science   ",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Data Science;Software Development;UI/UX Design;Healthcare / Medical;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-25 14:54:53",
+          "problem": "Rasid uses satellite imagery and AI to monitor coastal erosion in Egypt, predict high-risk zones, and provide prioritized solutions to help decision-makers act early and reduce future damage."
+        },
+        {
+          "full_name": "Youssef Adel Boshra ",
+          "email": "youssef.nashed.2024@aiu.edu.eg",
+          "phone": "01202764040",
+          "institution": "Alamein international university ",
+          "field": "Computer science ",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Software Development;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-25 15:02:50",
+          "problem": "Rasid uses satellite imagery and AI to monitor coastal erosion in Egypt, predict high-risk zones, and provide prioritized solutions to help decision-makers act early and reduce future damage"
+        },
+        {
+          "full_name": "Yassin Ahmed Mohamed Kamaleldeen Nasra ",
+          "email": "yassin.kamaleldeen.2024@aiu.edu.eg",
+          "phone": "01021867005",
+          "institution": "Alamein International University ",
+          "field": "Computer Science AI Major",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Data Science;Software Development;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-28 15:16:55",
+          "problem": "Egypt is ranked 5th globally as the most economically vulnerable country to sea-level rise losing approximately 0.46 km² of coastline every year with 4.66 km² lost in the past decade alone."
+        },
+        {
+          "full_name": "Gamal Khaled Abouelhamd Hussein",
+          "email": "gamal.hussien.2024@aiu.edu.eg",
+          "phone": "01550332600",
+          "institution": "Alamein International University",
+          "field": "Artificial Intelligence",
+          "role_in_team": "Data Scientist",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Data Science;Software Development;Business / Marketing; IoT / Hardware;",
+          "skill_level": "Advanced",
+          "submitted_at": "2026-04-29 08:37:28",
+          "problem": "AI addressing coastline losing."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "RVM",
+      "registrants": [
+        {
+          "full_name": "Ahmed Yasser Ibrahim elsayed ",
+          "email": "ahmed.yasser.2024@aiu.edu.eg",
+          "phone": "01273380071",
+          "institution": "AIU",
+          "field": "Computer engineering ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Software Development;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-17 13:13:09",
+          "problem": "Smart RVM using edge AI and IoT to classify recyclables, reduce contamination, and boost engagement via gamification, with offline-first operation for reliable campus deployment."
+        },
+        {
+          "full_name": "Marawan khaled Ahmed ",
+          "email": "marawankhaled7777@gmail.com",
+          "phone": "01212840173",
+          "institution": "Alamein international university ",
+          "field": "Computer engineering ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Software Development;Data Science;Business / Marketing;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-17 13:13:59",
+          "problem": "Smart RVM using edge AI and IoT to classify recyclables, reduce contamination, and boost engagement via gamification, with offline-first operation for reliable campus deployment."
+        },
+        {
+          "full_name": "Muhammed Adel Abdulrahman ",
+          "email": "muhammed.elsaid.2024@aiu.edu.eg",
+          "phone": "01153888321",
+          "institution": "AlAlamein International University ",
+          "field": "Computer Engineering ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning; IoT / Hardware;Software Development;Data Science;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-17 13:14:27",
+          "problem": "Smart RVM using edge AI and IoT to classify recyclables, reduce contamination, and boost engagement via gamification, with offline-first operation for reliable campus deployment."
+        },
+        {
+          "full_name": "mohamed mostafa awad bekhit ",
+          "email": "mohmamed.bekhit.2024@aiu.edu.eg",
+          "phone": "01224012641",
+          "institution": "Alamein International University",
+          "field": "Computer Engineering",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Data Science;Software Development;UI/UX Design; IoT / Hardware;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-17 13:15:14",
+          "problem": "Smart RVM using edge AI and IoT to classify recyclables, reduce contamination, and boost engagement via gamification, with offline-first operation for reliable campus deployment."
+        },
+        {
+          "full_name": "Ahmed Khaled Ahmed Said",
+          "email": "ahmed.said.2024@aiu.edu.eg",
+          "phone": "01274206608",
+          "institution": "Alamein International University",
+          "field": "computer engineering ",
+          "role_in_team": "Researcher",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-17 16:08:54",
+          "problem": "Smart RVM using edge AI and IoT to classify recyclables, reduce contamination, and boost engagement via gamification, with offline-first operation for reliable campus deployment."
+        },
+        {
+          "full_name": "Yasseen Ahmed ElSayed Abdelghany",
+          "email": "yasseen.abdulghany.2024@aiu.edu.eg",
+          "phone": "01503080095",
+          "institution": "Alamein international university ",
+          "field": "Computer engineering ",
+          "role_in_team": "Developer",
+          "track": " Industry Challenges",
+          "skills": "AI / Machine Learning;Software Development; IoT / Hardware;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-17 17:33:05",
+          "problem": "Smart RVM using edge AI and IoT to classify recyclables, reduce contamination, and boost engagement via gamification, with offline-first operation for reliable campus deployment."
+        }
+      ],
+      "declared_members": [
+        "mohamed mostafa awad",
+        "marwan khaled ahmed",
+        "ahmed khaled",
+        "mohamed adel",
+        "yasseen ahmed",
+        "ahmed yasser",
+        "Muhammed Adel Abdulrahman",
+        "Ahmed Khaled",
+        "marwan khaled",
+        "mohamed mostafa",
+        "Yasseen Ahmed ElSayed"
+      ]
+    },
+    {
+      "team_name": "Shimaa Elsaied Ibrahim Muhammad",
+      "registrants": [
+        {
+          "full_name": "Nour Maged Ahmed",
+          "email": "nourmaged208@gmail.com",
+          "phone": "01272298808",
+          "institution": "جامعه العلمين",
+          "field": "صيدلة",
+          "role_in_team": "Designer",
+          "track": "Health Promotion",
+          "skills": "Healthcare / Medical;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-23 16:22:07",
+          "problem": ". "
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Synapse404",
+      "registrants": [
+        {
+          "full_name": "Omar Reda Mansour Elshaer",
+          "email": "omar.khamis.2025@aiu.edu.eg",
+          "phone": "01286354705",
+          "institution": "Alamein International University",
+          "field": "Computer science - Software Engineering",
+          "role_in_team": "Developer",
+          "track": "Health Promotion",
+          "skills": "Software Development;UI/UX Design;Data Science;AI;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-17 16:39:39",
+          "problem": "AI-powered student health companion that tracks habits, provides personalized recommendations, and uses gamification to improve lifestyle, focus, and overall well-being."
+        }
+      ],
+      "declared_members": [
+        "Omar Reda Mansour Elshaer",
+        "Mohamed Wael Abdelmaqsoud Fathy",
+        "Abdelrahman Ahmed Ibrahim Abdelaty"
+      ]
+    },
+    {
+      "team_name": "TABx",
+      "registrants": [
+        {
+          "full_name": "Basmala Samir Mustafa",
+          "email": "basmala.samir.2025@aiu.edu.eg",
+          "phone": "01095885753",
+          "institution": "Alamein International Univercity",
+          "field": "AI Engineering",
+          "role_in_team": "Data Scientist",
+          "track": " Industry Challenges",
+          "skills": "AI / Machine Learning;Data Science;Software Development;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-26 00:13:08",
+          "problem": "The idea revolves around an AI-powered virtual work environment where students solve real tasks, collaborate with AI teammates, and gain practical job-ready skills through simulation."
+        }
+      ],
+      "declared_members": [
+        "Basmala Samir Mustafa Mahmoud",
+        "Engy Bahaa Elden Saleh",
+        "Mennatullah Mohamed Hosny"
+      ]
+    },
+    {
+      "team_name": "the survivers",
+      "registrants": [
+        {
+          "full_name": "Yousef Mahmoud wahied Elserafy ",
+          "email": "youssef.waheed.2025@aiu.edu.eg",
+          "phone": "01066533307",
+          "institution": "10",
+          "field": "Computer science ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;Business / Marketing;",
+          "skill_level": "Beginner",
+          "submitted_at": "2026-04-17 17:18:11",
+          "problem": "AI-powered system that dynamically optimizes traffic signals using real-time data from sensors and cameras to reduce congestion, lower emissions, and improve urban mobility in cities like Alexandria."
+        },
+        {
+          "full_name": "Abdulrahman  Mohammed",
+          "email": "abdelrahman77mohammad@gmail.com",
+          "phone": "01044423574",
+          "institution": "No company",
+          "field": "Computer science ",
+          "role_in_team": "Developer",
+          "track": "Smart Cities & Urban Innovation",
+          "skills": "AI / Machine Learning;",
+          "skill_level": "Beginner",
+          "submitted_at": "2026-04-17 17:18:24",
+          "problem": "AI-powered system that dynamically optimizes traffic signals using real-time data from sensors and cameras to reduce congestion, lower emissions, and improve urban mobility in cities like Alexandria."
+        }
+      ],
+      "declared_members": [
+        "Yousef Elserafy",
+        "Hassan Elgouhary",
+        "amer",
+        "sayh"
+      ]
+    },
+    {
+      "team_name": "VisionX Team",
+      "registrants": [
+        {
+          "full_name": "Omar Ahmed Rabiee",
+          "email": "omar.abdulkarim.2025@aiu.edu.eg",
+          "phone": "01115840330",
+          "institution": "Acwad Technology",
+          "field": "Computer Engineering / Software Engineer",
+          "role_in_team": "Business Lead",
+          "track": " Industry Challenges",
+          "skills": "Software Development;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-20 20:38:26",
+          "problem": "AI platform connecting restaurants with suppliers to optimize supply chains, predict demand, reduce food waste, and improve inventory efficiency."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "VitalSync",
+      "registrants": [
+        {
+          "full_name": "Rodaina Mohamed Mustafa Hassan Ali ",
+          "email": "rodaina.hassan.2024@aiu.edu.eg",
+          "phone": "01281877442",
+          "institution": "Al Alamein International University ",
+          "field": "Artificial Intelligence Engineering ",
+          "role_in_team": "Data Scientist",
+          "track": "Health Promotion",
+          "skills": "AI / Machine Learning;Software Development;Data Science;Healthcare / Medical;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-29 16:56:53",
+          "problem": "VitalSync is an AI-powered preventive healthcare platform that unifies health data, detects risks early, and provides personalized insights to improve long-term wellness."
+        }
+      ],
+      "declared_members": []
+    },
+    {
+      "team_name": "Zeinab Ahmed Ebrahim : 24102399",
+      "registrants": [
+        {
+          "full_name": "Ranaa Ahmed AbdElsalam Elzanaty",
+          "email": "ranaa.elzanaty.2025@aiu.edu.eg",
+          "phone": "01143831208",
+          "institution": "Alamein International University",
+          "field": "Engineering",
+          "role_in_team": "Business Lead",
+          "track": "Smart Healthcare",
+          "skills": " IoT / Hardware;AI / Machine Learning;Business / Marketing;UI/UX Design;",
+          "skill_level": "Intermediate",
+          "submitted_at": "2026-04-23 18:51:15",
+          "problem": "Smart AI-powered wearable band that detects drowning or distress in real time and alerts lifeguards with location, enabling faster response and improving beach safety in crowded areas"
+        }
+      ],
+      "declared_members": []
+    }
+  ]
+}

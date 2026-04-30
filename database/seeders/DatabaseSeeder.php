@@ -12,7 +12,7 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             EditionSeeder::class,
             AdminUserSeeder::class,
-            DemoDataSeeder::class,
+            TeamsImportSeeder::class,
         ]);
     }
 }
