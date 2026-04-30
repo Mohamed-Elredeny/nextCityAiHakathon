@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 class TeamsImportSeeder extends Seeder
 {
-    private const DEFAULT_PASSWORD = 'ChangeMe!2026';
+    private const FALLBACK_PASSWORD = 'ChangeMe!2026';
     private const DATA_PATH = 'database/data/teams.json';
 
     public function run(): void
@@ -90,7 +90,7 @@ class TeamsImportSeeder extends Seeder
         }
 
         $this->command->info("Imported {$created} teams.");
-        $this->command->info('Default password for all imported users: ' . self::DEFAULT_PASSWORD);
+        $this->command->info('Login: email = student email, password = National ID (fallback: ' . self::FALLBACK_PASSWORD . ')');
     }
 
     private function upsertUser(array $row, bool $isLeader, string $teamSlug): User
@@ -106,11 +106,14 @@ class TeamsImportSeeder extends Seeder
         $headline = $this->buildHeadline($row);
         $bio = $this->buildBio($row);
 
-        $user = User::firstOrCreate(
+        $nationalId = preg_replace('/\D+/', '', (string) ($row['national_id'] ?? ''));
+        $passwordPlain = $nationalId !== '' ? $nationalId : self::FALLBACK_PASSWORD;
+
+        $user = User::updateOrCreate(
             ['email' => $email],
             [
                 'name' => $name,
-                'password' => Hash::make(self::DEFAULT_PASSWORD),
+                'password' => Hash::make($passwordPlain),
                 'institution' => $institution,
                 'phone' => $phone,
                 'headline' => $headline,
@@ -195,10 +198,10 @@ class TeamsImportSeeder extends Seeder
         DB::table('team_members')->delete();
         DB::table('teams')->where('edition_id', $edition->id)->delete();
 
+        $protectedRoles = ['super_admin', 'operator', 'judge', 'mentor'];
         $purgeUserIds = User::where('email', '!=', 'admin@acie.local')
-            ->where(function ($q) {
-                $q->where('email', 'like', '%@acie.local')
-                  ->orWhere('email', 'like', '%@example.com');
+            ->whereDoesntHave('roles', function ($q) use ($protectedRoles) {
+                $q->whereIn('name', $protectedRoles);
             })
             ->pluck('id');
 

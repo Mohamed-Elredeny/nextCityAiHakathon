@@ -43,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
                 'info' => Color::hex('#0F4778'),
             ])
             ->brandLogo(asset('img/aec-logo.png'))
-            ->brandLogoHeight('2.5rem')
+            ->brandLogoHeight('3.75rem')
             ->favicon(asset('img/aec-logo.png'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

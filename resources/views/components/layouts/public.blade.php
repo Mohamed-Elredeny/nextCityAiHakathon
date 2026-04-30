@@ -201,10 +201,10 @@
             class="bg-white/85 backdrop-blur-md border-b border-aiu-line sticky top-0 z-40 shadow-soft">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between gap-3 sm:gap-6">
             <a href="{{ route('home') }}" class="flex items-center gap-3 group min-w-0">
-                <div class="logo-plate w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center p-2 group-hover:scale-105 transition-transform shrink-0">
-                    <img src="{{ asset('img/aec-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
+                <div class="logo-plate h-14 sm:h-16 rounded-xl flex items-center justify-center px-3 py-2 group-hover:scale-105 transition-transform shrink-0">
+                    <img src="{{ asset('img/aec-logo.png') }}" alt="AIU · ACIE" class="h-full w-auto object-contain">
                 </div>
-                <div class="leading-tight min-w-0">
+                <div class="leading-tight min-w-0 hidden sm:block">
                     <p class="font-heading font-bold text-aiu-ink-900 text-sm sm:text-base truncate">
                         Alamein International University
                     </p>

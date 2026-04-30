@@ -1,8 +1,8 @@
 <div class="max-w-md mx-auto px-6 py-16">
     <div class="card-3d rounded-2xl p-8">
         <div class="text-center mb-7">
-            <div class="logo-plate inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 p-2.5">
-                <img src="{{ asset('img/aec-logo.png') }}" alt="AIU" class="w-full h-full object-contain">
+            <div class="logo-plate inline-flex items-center justify-center h-20 rounded-2xl mb-5 px-5 py-3">
+                <img src="{{ asset('img/aec-logo.png') }}" alt="AIU · ACIE" class="h-full w-auto object-contain">
             </div>
             <p class="text-aiu-red uppercase tracking-[0.28em] text-[11px] font-bold mb-2">Participant Sign In</p>
             <h1 class="font-heading font-bold text-3xl text-aiu-ink-900">Welcome back</h1>
