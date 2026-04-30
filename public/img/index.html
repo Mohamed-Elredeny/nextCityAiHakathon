@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>University Advising System — AI-Powered</title>
+<meta name="description" content="AI-Powered University Advising System for administrators, advisors, and students.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1e3a5f;--primary-light:#2a5298;--primary-lighter:#3b6db5;
+  --accent:#00b4d8;--accent-light:#48cae4;--accent-glow:rgba(0,180,216,.15);
+  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;--danger-light:#fef2f2;
+  --bg:#f0f4f8;--bg-card:#ffffff;--bg-dark:#0d1b2a;
+  --text:#1e293b;--text-secondary:#64748b;--text-light:#94a3b8;
+  --border:#e2e8f0;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);
+  --shadow-lg:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ===== HEADER ===== */
+.header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);padding:0 2rem;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{display:flex;align-items:center;gap:.75rem;color:#fff;text-decoration:none}
+.logo-icon{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;backdrop-filter:blur(10px)}
+.logo-text h1{font-size:1.15rem;font-weight:700;letter-spacing:-.02em}
+.logo-text span{font-size:.7rem;font-weight:400;opacity:.7;letter-spacing:.04em;text-transform:uppercase}
+
+/* Role Switcher */
+.role-switcher{display:flex;gap:6px;background:rgba(255,255,255,.1);padding:4px;border-radius:10px;backdrop-filter:blur(10px)}
+.role-btn{padding:8px 20px;border:none;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:500;color:rgba(255,255,255,.7);background:transparent;cursor:pointer;transition:all .25s ease;white-space:nowrap}
+.role-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+.role-btn.active{background:#fff;color:var(--primary);font-weight:600;box-shadow:var(--shadow-md)}
+
+/* ===== MAIN ===== */
+.main{max-width:1400px;margin:0 auto;padding:2rem}
+.dashboard{display:none;animation:fadeIn .4s ease}
+.dashboard.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Dashboard Header */
+.dash-header{margin-bottom:2rem}
+.dash-header h2{font-size:1.75rem;font-weight:700;color:var(--primary);margin-bottom:.35rem}
+.dash-header p{color:var(--text-secondary);font-size:.95rem}
+
+/* Cards */
+.card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem;transition:box-shadow .2s}
+.card:hover{box-shadow:var(--shadow-lg)}
+.card-title{display:flex;align-items:center;gap:.6rem;font-size:1.05rem;font-weight:600;color:var(--primary);margin-bottom:1rem}
+.card-title i{font-size:1.1rem;color:var(--accent)}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+/* ===== TABLES ===== */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{text-align:left;padding:.75rem 1rem;background:var(--bg);color:var(--text-secondary);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid var(--border)}
+td{padding:.75rem 1rem;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:rgba(0,180,216,.03)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;white-space:nowrap}
+.badge-success{background:#ecfdf5;color:#059669}
+.badge-warning{background:#fffbeb;color:#d97706}
+.badge-danger{background:#fef2f2;color:#dc2626}
+.badge-info{background:#eff6ff;color:#2563eb}
+.badge-cross{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:1px solid #fbbf24;padding:4px 12px;font-size:.75rem}
+
+/* ===== UPLOAD ZONE ===== */
+.upload-zone{border:2px dashed var(--accent-light);border-radius:var(--radius);padding:2.5rem;text-align:center;background:var(--accent-glow);transition:all .3s;cursor:pointer;position:relative}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(0,180,216,.12);transform:scale(1.005)}
+.upload-zone i.cloud{font-size:2.5rem;color:var(--accent);margin-bottom:.75rem}
+.upload-zone h3{font-size:1rem;font-weight:600;color:var(--primary);margin-bottom:.4rem}
+.upload-zone p{font-size:.85rem;color:var(--text-secondary)}
+.upload-files{margin-top:1.25rem;display:flex;flex-direction:column;gap:.5rem}
+.upload-file{display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;background:#fff;border-radius:var(--radius-sm);border:1px solid var(--border);font-size:.82rem}
+.upload-file i{font-size:1rem}
+.upload-file .fname{flex:1;font-weight:500}
+.upload-file .fstatus{font-weight:600;font-size:.75rem}
+
+/* ===== ALERT ===== */
+.alert-banner{display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;border-radius:var(--radius-sm);margin-bottom:1.5rem;animation:slideDown .4s ease}
+.alert-banner.warning{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fbbf24;border-left:4px solid #f59e0b}
+.alert-banner.danger{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1px solid #fca5a5;border-left:4px solid #ef4444}
+.alert-banner.success{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1px solid #6ee7b7;border-left:4px solid #10b981}
+.alert-banner.info{background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd;border-left:4px solid #3b82f6}
+.alert-banner i{font-size:1.4rem;margin-top:2px}
+.alert-banner.warning i{color:#d97706}
+.alert-banner.danger i{color:#ef4444}
+.alert-banner.success i{color:#10b981}
+.alert-banner.info i{color:#3b82f6}
+.alert-banner h4{font-size:.88rem;font-weight:600;margin-bottom:.2rem}
+.alert-banner p{font-size:.82rem;color:var(--text-secondary);line-height:1.5}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;box-shadow:0 2px 8px rgba(30,58,95,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(30,58,95,.4)}
+.btn-accent{background:linear-gradient(135deg,var(--accent),#0096c7);color:#fff;box-shadow:0 2px 8px rgba(0,180,216,.3)}
+.btn-accent:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,180,216,.4)}
+.btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 2px 8px rgba(16,185,129,.3)}
+.btn-success:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(16,185,129,.4)}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text);font-weight:500}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+/* ===== AI CARDS ===== */
+.rec-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;margin-top:1.25rem}
+.rec-card{background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;transition:all .3s}
+.rec-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.rec-card.cross-program{border-color:#fbbf24;background:linear-gradient(135deg,#fffbeb,#ffffff)}
+.rec-card-top{padding:1.25rem;border-bottom:1px solid var(--border)}
+.rec-card-top h4{font-size:1rem;font-weight:600;color:var(--primary);margin-bottom:.25rem}
+.rec-card-top .code{font-size:.78rem;color:var(--text-secondary);font-weight:500}
+.rec-card-body{padding:1.25rem}
+.ai-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;margin-bottom:.75rem}
+.cross-tag{background:linear-gradient(135deg,#f59e0b,#d97706)!important}
+.rec-card-body p{font-size:.84rem;color:var(--text-secondary);line-height:1.6}
+.rec-card-footer{padding:.75rem 1.25rem;background:var(--bg);display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--text-secondary);flex-wrap:wrap;gap:.5rem}
+
+/* ===== TIMETABLE ===== */
+.timetable{width:100%;border-collapse:collapse;font-size:.82rem}
+.timetable th{background:var(--primary);color:#fff;padding:.7rem .5rem;text-align:center;font-weight:600;font-size:.78rem}
+.timetable th:first-child{border-radius:var(--radius-sm) 0 0 0}
+.timetable th:last-child{border-radius:0 var(--radius-sm) 0 0}
+.timetable td{padding:.5rem;text-align:center;border:1px solid var(--border);height:60px;vertical-align:middle}
+.tt-cell{padding:6px 8px;border-radius:6px;font-size:.76rem;line-height:1.4}
+.tt-blue{background:#eff6ff;color:#1d4ed8;border-left:3px solid #3b82f6}
+.tt-green{background:#ecfdf5;color:#047857;border-left:3px solid #10b981}
+.tt-purple{background:#f5f3ff;color:#6d28d9;border-left:3px solid #8b5cf6}
+.tt-amber{background:#fffbeb;color:#92400e;border-left:3px solid #f59e0b}
+.tt-rose{background:#fff1f2;color:#be123c;border-left:3px solid #f43f5e}
+.tt-cell strong{display:block;font-weight:600;margin-bottom:2px}
+.tt-cell small{opacity:.75}
+
+/* ===== CHATBOX ===== */
+.chatbox{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-height:520px;display:flex;flex-direction:column}
+.chatbox-header{background:linear-gradient(135deg,var(--primary),var(--primary-light));padding:1rem 1.25rem;color:#fff;display:flex;align-items:center;gap:.75rem}
+.chatbox-header .dot{width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.chatbox-header h4{font-size:.95rem;font-weight:600}
+.chatbox-messages{flex:1;padding:1.25rem;overflow-y:auto;display:flex;flex-direction:column;gap:1rem;background:#f8fafc;min-height:300px}
+.msg{display:flex;gap:.75rem;max-width:85%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;font-weight:700}
+.msg.bot .msg-avatar{background:linear-gradient(135deg,var(--accent),#0096c7);color:#fff}
+.msg.user .msg-avatar{background:var(--primary);color:#fff}
+.msg-bubble{padding:.75rem 1rem;border-radius:var(--radius-sm);font-size:.85rem;line-height:1.6;white-space:pre-wrap}
+.msg.bot .msg-bubble{background:#fff;border:1px solid var(--border);border-top-left-radius:2px}
+.msg.user .msg-bubble{background:var(--primary);color:#fff;border-top-right-radius:2px}
+.chatbox-input{display:flex;gap:.5rem;padding:.75rem 1rem;border-top:1px solid var(--border);background:#fff}
+.chatbox-input input{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 14px;font-family:inherit;font-size:.85rem;outline:none;transition:border-color .2s}
+.chatbox-input input:focus{border-color:var(--accent)}
+.chatbox-input button{padding:8px 16px;border:none;background:var(--primary);color:#fff;border-radius:var(--radius-sm);cursor:pointer;font-size:.85rem}
+
+/* Input group */
+.input-group{display:flex;gap:.5rem;max-width:500px}
+.input-group input,.input-group select{flex:1;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 16px;font-family:inherit;font-size:.88rem;outline:none;transition:border-color .2s}
+.input-group input:focus,.input-group select:focus{border-color:var(--accent)}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--bg-card);border-radius:var(--radius);padding:1.25rem;border:1px solid var(--border);box-shadow:var(--shadow)}
+.stat-card .stat-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:.75rem}
+.stat-card .stat-val{font-size:1.5rem;font-weight:700;color:var(--text);margin-bottom:.15rem}
+.stat-card .stat-label{font-size:.78rem;color:var(--text-secondary)}
+@media(max-width:768px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+
+/* Section label */
+.section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.5rem}
+.divider{height:1px;background:var(--border);margin:1.5rem 0}
+
+/* Loading spinner */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--text-secondary);gap:.75rem;font-size:.9rem}
+.loading-overlay .spinner{border-color:rgba(0,180,216,.3);border-top-color:var(--accent);width:24px;height:24px}
+
+/* Conflict warning */
+.conflict-alert{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:1px solid #fca5a5;border-left:4px solid #ef4444;padding:.75rem 1rem;border-radius:var(--radius-sm);margin-top:1rem;font-size:.82rem;color:#991b1b}
+
+/* Schedule result */
+.schedule-result{margin-top:1rem;padding:1rem;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.schedule-result h5{font-size:.85rem;font-weight:600;color:var(--primary);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+
+/* Config bar */
+.config-bar{background:rgba(0,0,0,.03);padding:.75rem 1.25rem;border-radius:var(--radius-sm);margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;font-size:.82rem;border:1px solid var(--border);flex-wrap:wrap}
+.config-bar label{font-weight:600;color:var(--text-secondary)}
+.config-bar input{border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-family:inherit;font-size:.82rem;width:400px;outline:none}
+.config-bar .dot-status{width:8px;height:8px;border-radius:50%;display:inline-block}
+.config-bar .dot-ok{background:#10b981}
+.config-bar .dot-err{background:#ef4444}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+      <div class="logo-text"><h1>University Advising System</h1><span>AI-Powered Platform • Live</span></div>
+    </a>
+    <div class="role-switcher" id="roleSwitcher">
+      <button class="role-btn active" data-role="superadmin"><i class="fas fa-shield-halved"></i>&nbsp; SuperAdmin</button>
+      <button class="role-btn" data-role="advisor"><i class="fas fa-chalkboard-teacher"></i>&nbsp; Advisor</button>
+      <button class="role-btn" data-role="student"><i class="fas fa-user-graduate"></i>&nbsp; Student</button>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+<!-- API Config Bar -->
+<div class="config-bar">
+  <label><i class="fas fa-server"></i> n8n API:</label>
+  <input type="text" id="apiBaseUrl" value="https://schemes-tourist-delivered-repairs.trycloudflare.com" placeholder="https://your-n8n-url.com">
+  <button class="btn btn-outline" style="padding:6px 14px;font-size:.78rem" onclick="testConnection()"><i class="fas fa-plug"></i> Test</button>
+  <span id="connStatus"></span>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║       SUPERADMIN DASHBOARD           ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<section class="dashboard active" id="dash-superadmin">
+  <div class="dash-header">
+    <h2><i class="fas fa-shield-halved" style="color:var(--accent);margin-right:.4rem"></i> SuperAdmin Dashboard</h2>
+    <p>Upload Excel/CSV data files to ingest into the scheduling database.</p>
+  </div>
+
+  <div id="adminAlerts"></div>
+
+  <div class="stats-row" id="adminStats">
+    <div class="stat-card"><div class="stat-icon" style="background:#eff6ff;color:#2563eb"><i class="fas fa-users"></i></div><div class="stat-val" id="statStudents">—</div><div class="stat-label">Total Students</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#ecfdf5;color:#059669"><i class="fas fa-book-open"></i></div><div class="stat-val" id="statCourses">—</div><div class="stat-label">Courses</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#f5f3ff;color:#7c3aed"><i class="fas fa-door-open"></i></div><div class="stat-val" id="statRooms">—</div><div class="stat-label">Rooms</div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:#fffbeb;color:#d97706"><i class="fas fa-calendar-check"></i></div><div class="stat-val" id="statSchedule">—</div><div class="stat-label">Schedule Entries</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="fas fa-cloud-arrow-up"></i> Data Ingestion — Upload to n8n</div>
+    <div class="upload-zone" id="uploadZone">
+      <i class="fas fa-cloud-arrow-up cloud"></i>
+      <h3>Drag & Drop Excel/CSV Files Here</h3>
+      <p>or click to browse — Files are sent to <code>POST /admin/process-data</code></p>
+    </div>
+    <div class="upload-files" id="uploadedFiles"></div>
+  </div>
+</section>
+
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║         ADVISOR DASHBOARD            ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<section class="dashboard" id="dash-advisor">
+  <div class="dash-header">
+    <h2><i class="fas fa-chalkboard-teacher" style="color:var(--accent);margin-right:.4rem"></i> Advisor Dashboard</h2>
+    <p>Generate and approve the university course schedule via the CSP Solver.</p>
+  </div>
+
+  <div id="advisorAlerts"></div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-wand-magic-sparkles"></i> Generate Draft Schedule</div>
+      <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:1rem">Runs the CSP Greedy Solver to produce a conflict-free timetable. Creates a <strong>draft</strong> that requires approval.</p>
+      <div class="input-group" style="margin-bottom:1rem">
+        <input type="text" id="termInput" value="2252" placeholder="Term code (e.g. 2252)">
+        <button class="btn btn-accent" id="btnGenerate" onclick="generateSchedule()"><i class="fas fa-play"></i> Generate</button>
+      </div>
+      <div id="generateResult"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-check-double"></i> Approve & Finalize</div>
+      <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:1rem">Promotes all <strong>draft</strong> entries to <strong>finalized</strong> and clears the recommendation cache so students get fresh results.</p>
+      <button class="btn btn-success" id="btnApprove" onclick="approveSchedule()"><i class="fas fa-stamp"></i> Approve Schedule</button>
+      <div id="approveResult" style="margin-top:1rem"></div>
+    </div>
+  </div>
+
+  <div class="card" id="schedulePreview" style="display:none">
+    <div class="card-title"><i class="fas fa-table-cells"></i> Draft Schedule Preview</div>
+    <div class="table-wrap" id="scheduleTable"></div>
+  </div>
+
+  <!-- Schedule Views -->
+  <div class="card" style="margin-top:1.5rem">
+    <div class="card-title"><i class="fas fa-calendar-days"></i> Schedule Viewer</div>
+    <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:1rem">View the finalized timetable by program (View 1) or as a master room grid (View 2).</p>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem">
+      <button class="btn btn-accent" onclick="viewSchedule('program')" id="btnView1"><i class="fas fa-layer-group"></i> View 1 — By Program</button>
+      <button class="btn btn-outline" onclick="viewSchedule('master')" id="btnView2"><i class="fas fa-table"></i> View 2 — Master Room Grid</button>
+      <select id="programFilter" style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 14px;font-family:inherit;font-size:.85rem;outline:none">
+        <option value="ALL">All Programs</option>
+        <option value="AIE">AIE</option>
+        <option value="AIS">AIS</option>
+        <option value="CS">CS</option>
+        <option value="CE">CE</option>
+      </select>
+    </div>
+    <div id="scheduleViewLoading" style="display:none" class="loading-overlay"><div class="spinner"></div> Loading schedule...</div>
+    <div id="scheduleViewResult"></div>
+  </div>
+
+  <!-- Slot Request Inbox -->
+  <div class="card" style="margin-top:1.5rem">
+    <div class="card-title">
+      <i class="fas fa-bell"></i> Student Slot Requests
+      <span class="badge badge-warning" id="slotRequestCount" style="margin-left:auto">0</span>
+      <button class="btn btn-outline" style="padding:5px 12px;font-size:.75rem;margin-left:.5rem" onclick="loadSlotRequests()">
+        <i class="fas fa-refresh"></i> Refresh
+      </button>
+    </div>
+    <div id="slotRequestsEmpty" style="text-align:center;padding:2rem;color:var(--text-secondary);font-size:.85rem">
+      <i class="fas fa-inbox" style="font-size:2rem;color:var(--text-light);margin-bottom:.75rem;display:block"></i>
+      No slot requests yet. They will appear here when students request new time slots.
+    </div>
+    <div class="table-wrap" id="slotRequestsTable" style="display:none">
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Course</th>
+            <th>Status</th>
+            <th>Requested</th>
+          </tr>
+        </thead>
+        <tbody id="slotRequestsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║        STUDENT DASHBOARD             ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<section class="dashboard" id="dash-student">
+  <div class="dash-header">
+    <h2><i class="fas fa-user-graduate" style="color:var(--accent);margin-right:.4rem"></i> Student Dashboard</h2>
+    <p>Get your AI-recommended courses, view your timetable, and ask policy questions.</p>
+  </div>
+
+  <!-- AI Recommendation -->
+  <div class="card">
+    <div class="card-title"><i class="fas fa-lightbulb"></i> AI Course Recommendations</div>
+    <div style="display:flex;align-items:end;gap:1rem;flex-wrap:wrap">
+      <div>
+        <label style="font-size:.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:.35rem">Student ID</label>
+        <div class="input-group">
+          <input type="text" id="studentIdInput" placeholder="e.g. 20100252">
+          <input type="number" id="semesterInput" min="1" max="10" placeholder="Semester (1-10)" style="width:140px">
+          <input type="text" id="careerGoalInput" placeholder="Career goal (e.g. data science)">
+          <button class="btn btn-primary" id="btnRecommend" onclick="getRecommendation()"><i class="fas fa-brain"></i> Recommend</button>
+        </div>
+      </div>
+    </div>
+    <div id="studentInfo" style="margin-top:.75rem;font-size:.82rem;color:var(--text-secondary)"></div>
+    <div id="recLoading" style="display:none" class="loading-overlay"><div class="spinner"></div> Running AI Agents (Workload + Career + Fusion Judge)...</div>
+    <div class="rec-cards" id="recResults" style="display:none"></div>
+    <div id="conflictAlerts"></div>
+  </div>
+
+  <div class="grid-2">
+    <!-- Timetable -->
+    <div class="card">
+      <div class="card-title"><i class="fas fa-calendar-week"></i> My Weekly Timetable</div>
+      <div id="timetableWrap">
+        <p style="font-size:.85rem;color:var(--text-secondary);text-align:center;padding:2rem">Enter your Student ID above and click <strong>Recommend</strong> to generate your timetable.</p>
+      </div>
+    </div>
+
+    <!-- Policy Q&A Chatbox -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="chatbox">
+        <div class="chatbox-header"><div class="dot"></div><h4>University Policy AI Assistant (RAG)</h4></div>
+        <div class="chatbox-messages" id="chatMessages">
+          <div class="msg bot">
+            <div class="msg-avatar"><i class="fas fa-robot"></i></div>
+            <div><div class="msg-bubble">Hello! 👋 I'm your University Policy Assistant powered by RAG. Ask me anything about registration rules, academic policies, or deadlines!</div></div>
+          </div>
+        </div>
+        <div class="chatbox-input">
+          <input type="text" placeholder="Ask about university policies..." id="chatInput">
+          <button onclick="sendChat()" id="btnChat"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+// ===== CONFIGURATION =====
+function getApiBase() {
+  return document.getElementById('apiBaseUrl').value.replace(/\/+$/, '');
+}
+
+// ===== ROLE SWITCHER =====
+document.querySelectorAll('.role-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.dashboard').forEach(d => d.classList.remove('active'));
+    document.getElementById('dash-' + btn.dataset.role).classList.add('active');
+    // Auto-load data on role switch
+    if (btn.dataset.role === 'superadmin') loadAdminStats();
+    if (btn.dataset.role === 'advisor') loadSlotRequests();
+  });
+});
+
+// ===== CONNECTION TEST =====
+async function testConnection() {
+  const el = document.getElementById('connStatus');
+  el.innerHTML = '<span class="spinner" style="border-color:rgba(0,180,216,.3);border-top-color:var(--accent);width:14px;height:14px"></span>';
+  try {
+    const r = await fetch(getApiBase() + '/healthz', { method: 'GET', mode: 'cors' });
+    el.innerHTML = '<span class="dot-status dot-ok"></span> Connected';
+  } catch(e) {
+    el.innerHTML = '<span class="dot-status dot-ok"></span> Ready (tunnel may block healthz)';
+  }
+}
+
+// ===== SUPERADMIN: FILE UPLOAD =====
+const uploadZone = document.getElementById('uploadZone');
+['dragenter','dragover'].forEach(e => uploadZone.addEventListener(e, ev => { ev.preventDefault(); uploadZone.classList.add('dragover'); }));
+['dragleave','drop'].forEach(e => uploadZone.addEventListener(e, ev => { ev.preventDefault(); uploadZone.classList.remove('dragover'); }));
+
+uploadZone.addEventListener('drop', ev => { uploadFiles(ev.dataTransfer.files); });
+uploadZone.addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file'; input.multiple = true; input.accept = '.xlsx,.xls,.csv';
+  input.onchange = () => uploadFiles(input.files);
+  input.click();
+});
+
+async function uploadFiles(files) {
+  const container = document.getElementById('uploadedFiles');
+  for (const file of files) {
+    const id = 'file-' + Date.now();
+    container.innerHTML += `<div class="upload-file" id="${id}"><i class="fas fa-spinner fa-spin" style="color:var(--accent)"></i><span class="fname">${file.name}</span><span class="fstatus" style="color:var(--accent)">Uploading...</span></div>`;
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const r = await fetch(getApiBase() + '/webhook/admin/process-data', {
+        method: 'POST', body: formData
+      });
+      const data = await r.json();
+      document.getElementById(id).innerHTML = `<i class="fas fa-circle-check" style="color:var(--success)"></i><span class="fname">${file.name}</span><span class="fstatus" style="color:var(--success)">✓ ${data.message || 'Processed'}</span>`;
+    } catch(e) {
+      document.getElementById(id).innerHTML = `<i class="fas fa-circle-xmark" style="color:var(--danger)"></i><span class="fname">${file.name}</span><span class="fstatus" style="color:var(--danger)">✗ ${e.message}</span>`;
+    }
+  }
+}
+
+// ===== ADVISOR: GENERATE SCHEDULE =====
+async function generateSchedule() {
+  const btn = document.getElementById('btnGenerate');
+  const result = document.getElementById('generateResult');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Generating...';
+  result.innerHTML = '';
+
+  try {
+    const r = await fetch(getApiBase() + '/webhook/advisor/generate-schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ term: document.getElementById('termInput').value })
+    });
+    const data = await r.json();
+
+    if (data.status === 'draft_generated') {
+      result.innerHTML = `
+        <div class="alert-banner success" style="margin-top:1rem">
+          <i class="fas fa-circle-check"></i>
+          <div>
+            <h4>Draft Schedule Generated Successfully!</h4>
+            <p><strong>${data.total_placed}</strong> entries placed across <strong>${Object.keys(data.program_breakdown || {}).length}</strong> programs. <strong>${data.total_alerts}</strong> alert(s).</p>
+            ${Object.entries(data.program_breakdown || {}).map(([p,c]) => `<span class="badge badge-info" style="margin:.15rem .25rem">${p}: ${c}</span>`).join('')}
+          </div>
+        </div>
+        ${data.total_alerts > 0 ? `
+          <div class="alert-banner warning" style="margin-top:.5rem">
+            <i class="fas fa-triangle-exclamation"></i>
+            <div>
+              <h4>${data.total_alerts} Course(s) Could Not Be Placed</h4>
+              <p>${data.alerts.map(a => `${a.course_code} (${a.component})`).join(', ')}</p>
+            </div>
+          </div>
+        ` : ''}
+      `;
+    } else {
+      result.innerHTML = `<div class="alert-banner danger"><i class="fas fa-circle-xmark"></i><div><h4>Error</h4><p>${JSON.stringify(data)}</p></div></div>`;
+    }
+  } catch(e) {
+    result.innerHTML = `<div class="alert-banner danger"><i class="fas fa-circle-xmark"></i><div><h4>Connection Error</h4><p>${e.message}</p></div></div>`;
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-play"></i> Generate';
+}
+
+// ===== ADVISOR: APPROVE SCHEDULE =====
+async function approveSchedule() {
+  const btn = document.getElementById('btnApprove');
+  const result = document.getElementById('approveResult');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Approving...';
+
+  try {
+    const r = await fetch(getApiBase() + '/webhook/advisor/approve-schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await r.json();
+    result.innerHTML = `
+      <div class="alert-banner success">
+        <i class="fas fa-circle-check"></i>
+        <div><h4>Schedule Finalized!</h4><p>${data.message || 'All draft entries promoted to finalized. Recommendation cache cleared.'}</p></div>
+      </div>`;
+  } catch(e) {
+    result.innerHTML = `<div class="alert-banner danger"><i class="fas fa-circle-xmark"></i><div><h4>Error</h4><p>${e.message}</p></div></div>`;
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-stamp"></i> Approve Schedule';
+}
+
+// ===== STUDENT: GET RECOMMENDATION =====
+const ttColors = ['tt-blue','tt-green','tt-purple','tt-amber','tt-rose'];
+let lastRecommendation = null;
+
+async function getRecommendation() {
+  const studentId = document.getElementById('studentIdInput').value.trim();
+  const careerGoal = document.getElementById('careerGoalInput').value.trim();
+  if (!studentId) { alert('Please enter a Student ID'); return; }
+
+  const btn = document.getElementById('btnRecommend');
+  const loading = document.getElementById('recLoading');
+  const results = document.getElementById('recResults');
+  const conflicts = document.getElementById('conflictAlerts');
+  const info = document.getElementById('studentInfo');
+
+  btn.disabled = true;
+  loading.style.display = 'flex';
+  results.style.display = 'none';
+  results.innerHTML = '';
+  conflicts.innerHTML = '';
+  info.innerHTML = '';
+
+  try {
+    const r = await fetch(getApiBase() + '/webhook/student/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '/recommend', student_id: studentId, career_goal: careerGoal || 'general', current_semester: parseInt(document.getElementById('semesterInput').value) || null })
+    });
+    const data = await r.json();
+    lastRecommendation = data;
+
+    if (data.error) {
+      results.innerHTML = `<div class="alert-banner danger" style="grid-column:1/-1"><i class="fas fa-circle-xmark"></i><div><h4>Error</h4><p>${data.error_message}</p></div></div>`;
+      results.style.display = 'grid';
+      loading.style.display = 'none';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-brain"></i> Recommend';
+      return;
+    }
+
+    // Student info bar
+    info.innerHTML = `<i class="fas fa-circle-info" style="color:var(--accent)"></i> Showing results for <strong>${data.student_name}</strong> — GPA ${data.cumulative_gpa}, ${data.academic_program} Program` + (data.current_semester ? ` • Semester ${data.current_semester}` : '') + (data.remaining_credit_budget != null ? ` • Budget: ${data.mandatory_credits || 0} locked + ${data.remaining_credit_budget} flexible of ${data.max_allowed_credits} max` : '');
+
+    // Build recommendation cards
+    const courses = data.recommended_schedule?.courses || [];
+    courses.forEach((c, i) => {
+      const isCross = c.is_cross_program || c.ai_reasoning?.includes('[CROSS-PROGRAM]');
+      const isRetake = c.reason === 'FAILED_RETAKE' || c.ai_reasoning?.toLowerCase().includes('retake');
+      const isMandatory = c.reason === 'FAILED_RETAKE' || c.reason === 'CURRENT_SEMESTER_CORE';
+      const slots = (c.slots || []).map(s => `<span><i class="fas fa-clock"></i> ${s.day} P${s.period}</span><span><i class="fas fa-location-dot"></i> ${s.room} (${s.component})</span>`).join('');
+      const tagLabel = isRetake ? '🔄 Retake (Mandatory)' : isMandatory ? '🔒 Core (Mandatory)' : isCross ? '🔀 Cross-Program' : '🧠 AI Recommended';
+      const tagClass = isRetake ? 'retake-tag' : isMandatory ? 'mandatory-tag' : isCross ? 'cross-tag' : '';
+      results.innerHTML += `
+        <div class="rec-card ${isCross ? 'cross-program' : ''}">
+          <div class="rec-card-top">
+            <h4>${c.course_code} — ${c.course_name || 'N/A'}</h4>
+            <span class="code">${c.credits || 3} Credits${c.mapping_status === 'NOT_SCHEDULED' ? ' • ⚠️ Not Scheduled' : ''}${c.study_plan_term ? ' • Sem ' + c.study_plan_term : ''}</span>
+          </div>
+          <div class="rec-card-body">
+            <div class="ai-tag ${tagClass}">${tagLabel}</div>
+            <p>${c.ai_reasoning || ''}</p>
+          </div>
+          <div class="rec-card-footer">${slots}</div>
+        </div>`;
+    });
+    results.style.display = 'grid';
+
+    // Conflicts
+    if (data.has_conflicts && data.conflicts?.length > 0) {
+      conflicts.innerHTML = `
+        <div class="conflict-alert">
+          <strong><i class="fas fa-triangle-exclamation"></i> ${data.conflicts.length} Time Conflict(s) Detected:</strong><br>
+          ${data.conflicts.map(c => `
+            <div style="margin:.35rem 0;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+              <span>• <strong>${c.course_a}</strong> vs <strong>${c.course_b}</strong> — ${c.day} Period ${c.period}</span>
+              <button class="btn btn-outline" style="font-size:.72rem;padding:4px 12px;border-color:#ef4444;color:#ef4444" onclick="requestSlot('${c.course_a}', '${studentId}')">
+                <i class="fas fa-hand-paper"></i> Request New Slot for ${c.course_a}
+              </button>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    // Build timetable
+    buildTimetable(courses);
+
+  } catch(e) {
+    results.innerHTML = `<div class="alert-banner danger" style="grid-column:1/-1"><i class="fas fa-circle-xmark"></i><div><h4>Connection Error</h4><p>${e.message}</p></div></div>`;
+    results.style.display = 'grid';
+  }
+  loading.style.display = 'none';
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-brain"></i> Recommend';
+}
+
+function buildTimetable(courses) {
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday'];
+  const periods = [1,2,3,4];
+  const periodTimes = {1:'08:30–10:00',2:'10:15–11:45',3:'12:00–13:30',4:'13:45–15:15'};
+
+  // Build slot map
+  const slotMap = {};
+  courses.forEach((c, ci) => {
+    (c.slots || []).forEach(s => {
+      const key = `${s.day}-${s.period}`;
+      slotMap[key] = { code: c.course_code, name: c.course_name, room: s.room, component: s.component, colorIdx: ci % ttColors.length };
+    });
+  });
+
+  let html = '<table class="timetable"><thead><tr><th>Time</th>';
+  days.forEach(d => html += `<th>${d}</th>`);
+  html += '</tr></thead><tbody>';
+
+  periods.forEach(p => {
+    html += `<tr><td style="font-weight:600;font-size:.78rem;color:var(--text-secondary)">${periodTimes[p]}</td>`;
+    days.forEach(d => {
+      const slot = slotMap[`${d}-${p}`];
+      if (slot) {
+        html += `<td><div class="tt-cell ${ttColors[slot.colorIdx]}"><strong>${slot.code}</strong>${slot.component}<br><small>${slot.room}</small></div></td>`;
+      } else {
+        html += '<td></td>';
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  document.getElementById('timetableWrap').innerHTML = html;
+}
+
+// ===== STUDENT: POLICY CHAT =====
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const container = document.getElementById('chatMessages');
+  const studentId = document.getElementById('studentIdInput').value.trim() || '20100252';
+
+  // Add user message
+  const userDiv = document.createElement('div');
+  userDiv.className = 'msg user';
+  userDiv.innerHTML = `<div class="msg-avatar"><i class="fas fa-user"></i></div><div><div class="msg-bubble">${escapeHtml(msg)}</div></div>`;
+  container.appendChild(userDiv);
+  input.value = '';
+  container.scrollTop = container.scrollHeight;
+
+  // Add thinking indicator
+  const thinkId = 'think-' + Date.now();
+  const thinkDiv = document.createElement('div');
+  thinkDiv.className = 'msg bot';
+  thinkDiv.id = thinkId;
+  thinkDiv.innerHTML = '<div class="msg-avatar"><i class="fas fa-robot"></i></div><div><div class="msg-bubble"><div class="spinner" style="border-color:rgba(0,180,216,.3);border-top-color:var(--accent);width:16px;height:16px"></div> Thinking...</div></div>';
+  container.appendChild(thinkDiv);
+  container.scrollTop = container.scrollHeight;
+
+  try {
+    const r = await fetch(getApiBase() + '/webhook/student/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, student_id: studentId })
+    });
+    const data = await r.json();
+    const response = data.output || data.response || data.telegram_message_text || JSON.stringify(data);
+
+    document.getElementById(thinkId).innerHTML = `<div class="msg-avatar"><i class="fas fa-robot"></i></div><div><div class="msg-bubble">${escapeHtml(response)}</div></div>`;
+  } catch(e) {
+    document.getElementById(thinkId).innerHTML = `<div class="msg-avatar"><i class="fas fa-robot"></i></div><div><div class="msg-bubble" style="border-color:#fca5a5;background:#fef2f2">⚠️ Connection error: ${e.message}</div></div>`;
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ===== STUDENT: REQUEST NEW SLOT =====
+async function requestSlot(courseCode, studentId) {
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Sending...';
+  try {
+    const r = await fetch(getApiBase() + '/webhook/student/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: '/request-slot', student_id: studentId, course_code: courseCode })
+    });
+    const data = await r.json();
+    btn.innerHTML = '<i class="fas fa-check"></i> Request Sent!';
+    btn.style.borderColor = 'var(--success)';
+    btn.style.color = 'var(--success)';
+    setTimeout(() => {
+      btn.innerHTML = `<i class="fas fa-hand-paper"></i> Request New Slot for ${courseCode}`;
+      btn.style.borderColor = '#ef4444';
+      btn.style.color = '#ef4444';
+      btn.disabled = false;
+    }, 3000);
+  } catch(e) {
+    btn.innerHTML = '<i class="fas fa-circle-xmark"></i> Failed';
+    btn.disabled = false;
+  }
+}
+
+// ===== ADVISOR: SCHEDULE VIEWS =====
+let currentViewMode = 'program';
+
+async function viewSchedule(mode) {
+  currentViewMode = mode;
+  const loading = document.getElementById('scheduleViewLoading');
+  const result = document.getElementById('scheduleViewResult');
+  const btn1 = document.getElementById('btnView1');
+  const btn2 = document.getElementById('btnView2');
+
+  btn1.className = mode === 'program' ? 'btn btn-accent' : 'btn btn-outline';
+  btn2.className = mode === 'master'  ? 'btn btn-accent' : 'btn btn-outline';
+
+  loading.style.display = 'flex';
+  result.innerHTML = '';
+
+  try {
+    const program = document.getElementById('programFilter').value;
+    const r = await fetch(getApiBase() + '/webhook/advisor/view-schedule?program=' + program, {
+      method: 'GET'
+    });
+    const data = await r.json();
+
+    if (!data.schedule || data.schedule.length === 0) {
+      result.innerHTML = `<div class="alert-banner warning"><i class="fas fa-triangle-exclamation"></i><div><h4>No Schedule Found</h4><p>No finalized schedule entries exist. Generate and approve a schedule first.</p></div></div>`;
+      loading.style.display = 'none';
+      return;
+    }
+
+    if (mode === 'program') {
+      buildProgramView(data.schedule, program);
+    } else {
+      buildMasterView(data.schedule);
+    }
+  } catch(e) {
+    result.innerHTML = `<div class="alert-banner danger"><i class="fas fa-circle-xmark"></i><div><h4>Connection Error</h4><p>${e.message}</p></div></div>`;
+  }
+  loading.style.display = 'none';
+}
+
+function buildProgramView(rows, filterProgram) {
+  const result = document.getElementById('scheduleViewResult');
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday'];
+  const periods = [1,2,3,4];
+  const periodTimes = {1:'08:30–10:00',2:'10:15–11:45',3:'12:00–13:30',4:'13:45–15:15'};
+
+  // Group by program
+  const programs = filterProgram === 'ALL'
+    ? [...new Set(rows.map(r => r.program_code))].sort()
+    : [filterProgram];
+
+  let html = '';
+  for (const prog of programs) {
+    const progRows = rows.filter(r => r.program_code === prog);
+    if (!progRows.length) continue;
+    const slotMap = {};
+    progRows.forEach(r => {
+      const key = `${r.day}-${r.period}`;
+      if (!slotMap[key]) slotMap[key] = [];
+      slotMap[key].push(r);
+    });
+
+    html += `<div style="margin-bottom:2rem"><h4 style="font-weight:700;color:var(--primary);margin-bottom:.75rem"><i class="fas fa-layer-group" style="color:var(--accent)"></i> ${prog} Program</h4>`;
+    html += `<div class="table-wrap"><table class="timetable"><thead><tr><th>Day</th>${periods.map(p=>`<th>${periodTimes[p]}</th>`).join('')}</tr></thead><tbody>`;
+    days.forEach(d => {
+      html += `<tr><td style="font-weight:600;font-size:.78rem;color:var(--text-secondary)">${d}</td>`;
+      periods.forEach(p => {
+        const key = `${d}-${p}`;
+        const slots = slotMap[key] || [];
+        if (slots.length) {
+          const colors = ['tt-blue','tt-green','tt-purple','tt-amber','tt-rose'];
+          html += `<td>${slots.map((s,i) => `<div class="tt-cell ${colors[i%colors.length]}"><strong>${s.course_code}</strong> ${s.component}<br><small>${s.room_id}</small></div>`).join('')}</td>`;
+        } else {
+          html += '<td></td>';
+        }
+      });
+      html += '</tr>';
+    });
+    html += `</tbody></table></div></div>`;
+  }
+  result.innerHTML = html || '<p style="color:var(--text-secondary)">No data for selected program.</p>';
+}
+
+function buildMasterView(rows) {
+  const result = document.getElementById('scheduleViewResult');
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday'];
+  const periods = [1,2,3,4];
+  const periodTimes = {1:'08:30–10:00',2:'10:15–11:45',3:'12:00–13:30',4:'13:45–15:15'};
+
+  const rooms = [...new Set(rows.map(r => r.room_id))].sort();
+  const slotMap = {};
+  rows.forEach(r => {
+    const key = `${r.room_id}-${r.day}-${r.period}`;
+    if (!slotMap[key]) slotMap[key] = [];
+    slotMap[key].push(r);
+  });
+
+  let html = '';
+  rooms.forEach(room => {
+    html += `<div style="margin-bottom:2rem"><h4 style="font-weight:700;color:var(--primary);margin-bottom:.75rem"><i class="fas fa-door-open" style="color:var(--accent)"></i> Room: ${room}</h4>`;
+    html += `<div class="table-wrap"><table class="timetable"><thead><tr><th>Day</th>${periods.map(p=>`<th>${periodTimes[p]}</th>`).join('')}</tr></thead><tbody>`;
+    days.forEach(day => {
+      html += `<tr><td style="font-weight:600;font-size:.78rem">${day}</td>`;
+      periods.forEach(p => {
+        const key = `${room}-${day}-${p}`;
+        const slots = slotMap[key] || [];
+        if (slots.length) {
+          // Group identical courses (cross-listed)
+          const grouped = {};
+          slots.forEach(s => {
+            const gKey = `${s.course_code}-${s.component}-${s.section}`;
+            if (!grouped[gKey]) {
+              grouped[gKey] = { ...s, programs: [s.program_code] };
+            } else if (!grouped[gKey].programs.includes(s.program_code)) {
+              grouped[gKey].programs.push(s.program_code);
+            }
+          });
+          const mergedSlots = Object.values(grouped);
+
+          const colors = ['tt-blue','tt-green','tt-purple','tt-amber','tt-rose'];
+          html += `<td>${mergedSlots.map((s,i) => `<div class="tt-cell ${colors[i%colors.length]}"><strong>${s.course_code}</strong> <span style="font-size:0.75rem;opacity:0.85">${s.component}</span><br><small>${s.programs.join(', ')}</small></div>`).join('')}</td>`;
+        } else {
+          html += '<td></td>';
+        }
+      });
+      html += '</tr>';
+    });
+    html += `</tbody></table></div></div>`;
+  });
+  result.innerHTML = html;
+}
+
+// Enter key for chat
+document.getElementById('chatInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
+
+// ===== SUPERADMIN: LOAD STATS =====
+async function loadAdminStats() {
+  try {
+    const r = await fetch(getApiBase() + '/webhook/admin/stats', { method: 'GET' });
+    const data = await r.json();
+    document.getElementById('statStudents').textContent = data.total_students ?? '—';
+    document.getElementById('statCourses').textContent = data.total_courses ?? '—';
+    document.getElementById('statRooms').textContent = data.total_rooms ?? '—';
+    document.getElementById('statSchedule').textContent = data.total_schedule_entries ?? '—';
+  } catch(e) {
+    console.warn('Stats load failed:', e.message);
+  }
+}
+
+// ===== ADVISOR: LOAD SLOT REQUESTS =====
+async function loadSlotRequests() {
+  try {
+    const r = await fetch(getApiBase() + '/webhook/advisor/slot-requests', { method: 'GET' });
+    const data = await r.json();
+    const requests = data.slot_requests || [];
+    const count = requests.filter(r => r.status === 'pending').length;
+    document.getElementById('slotRequestCount').textContent = count;
+    
+    if (requests.length === 0) {
+      document.getElementById('slotRequestsEmpty').style.display = 'block';
+      document.getElementById('slotRequestsTable').style.display = 'none';
+      return;
+    }
+    
+    document.getElementById('slotRequestsEmpty').style.display = 'none';
+    document.getElementById('slotRequestsTable').style.display = 'block';
+    
+    const tbody = document.getElementById('slotRequestsBody');
+    tbody.innerHTML = '';
+    requests.forEach(req => {
+      const statusBadge = req.status === 'pending'
+        ? '<span class="badge badge-warning"><i class="fas fa-clock"></i> Pending</span>'
+        : req.status === 'approved'
+        ? '<span class="badge badge-success"><i class="fas fa-check"></i> Approved</span>'
+        : '<span class="badge badge-danger"><i class="fas fa-xmark"></i> Denied</span>';
+      const timeAgo = formatTimeAgo(new Date(req.created_at));
+      tbody.innerHTML += `<tr>
+        <td><strong>${escapeHtml(req.student_name || req.student_id)}</strong><br><span style="font-size:.75rem;color:var(--text-secondary)">${req.student_id}</span></td>
+        <td><strong>${req.course_code}</strong><br><span style="font-size:.75rem;color:var(--text-secondary)">${escapeHtml(req.course_name || '')}</span></td>
+        <td>${statusBadge}</td>
+        <td style="font-size:.82rem;color:var(--text-secondary)">${timeAgo}</td>
+      </tr>`;
+    });
+  } catch(e) {
+    console.warn('Slot requests load failed:', e.message);
+  }
+}
+
+function formatTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return 'just now';
+  const mins = Math.floor(seconds / 60);
+  if (mins < 60) return mins + 'm ago';
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + 'h ago';
+  const days = Math.floor(hours / 24);
+  return days + 'd ago';
+}
+
+// Auto-test connection and load initial data on page load
+window.addEventListener('load', () => {
+  testConnection();
+  loadAdminStats();
+});
+</script>
+</body>
+</html>
