@@ -40,6 +40,7 @@
                 'report'       => ['label' => 'Solution Report',   'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'],
                 'submission'   => ['label' => 'Submission',        'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
                 'discussion'   => ['label' => 'Discussion',        'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'],
+                'team'         => ['label' => 'Team & Applications','icon' => 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5a4 4 0 11-8 0 4 4 0 018 0zm6 0a4 4 0 11-8 0 4 4 0 018 0z'],
             ];
 
             $stepStatus = [
@@ -47,6 +48,7 @@
                 'report'     => $reportDone ? 'done' : ($sectionsFilled > 0 ? 'progress' : 'todo'),
                 'submission' => $submissionDone ? 'done' : ($checklistDone > 0 ? 'progress' : 'todo'),
                 'discussion' => array_sum($channelCounts) > 0 ? 'progress' : 'todo',
+                'team'       => $pendingApplications->isNotEmpty() ? 'progress' : 'todo',
             ];
 
             $totalChannelMessages = array_sum($channelCounts);
@@ -144,6 +146,9 @@
                         <span>{{ $def['label'] }}</span>
                         @if ($key === 'discussion' && $totalChannelMessages > 0 && !$isActive)
                             <span class="text-[10px] tabular-nums px-1.5 py-0.5 rounded-full bg-aiu-red text-white">{{ $totalChannelMessages }}</span>
+                        @endif
+                        @if ($key === 'team' && $pendingApplications->count() > 0 && !$isActive)
+                            <span class="text-[10px] tabular-nums px-1.5 py-0.5 rounded-full bg-aiu-red text-white">{{ $pendingApplications->count() }}</span>
                         @endif
                     </button>
                 @endforeach
@@ -815,6 +820,184 @@
                         @endforelse
                     </div>
                 </div>
+            </div>
+
+        @elseif ($step === 'team')
+            {{-- ===================== TEAM & APPLICATIONS ===================== --}}
+            <div class="space-y-6">
+                {{-- Recruiting controls (leader only) --}}
+                @if ($isLeader)
+                    <section class="card-3d rounded-3xl p-6 lg:p-7">
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <div>
+                                <p class="text-[10px] uppercase tracking-[0.22em] text-aiu-ink-400 font-bold">Recruiting</p>
+                                <h2 class="font-heading text-xl font-bold text-aiu-ink-900 mt-0.5">Find more members</h2>
+                                <p class="text-xs text-aiu-ink-600 mt-1">When recruiting is on, your team appears in the public Community → Recruiting Teams list.</p>
+                            </div>
+                            <a href="{{ route('community.teams') }}" target="_blank" class="text-xs text-aiu-red font-semibold hover:underline shrink-0">View public list →</a>
+                        </div>
+
+                        <div class="surface-soft rounded-xl p-4 mb-4 flex items-center justify-between gap-3">
+                            <div>
+                                <p class="font-semibold text-sm text-aiu-ink-900">Open for applications</p>
+                                <p class="text-xs text-aiu-ink-600">Toggle off to hide your team from the recruitment list.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" wire:model.live="isRecruiting" class="sr-only peer">
+                                <div class="w-12 h-6 bg-aiu-ink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow peer-checked:bg-aiu-red"></div>
+                            </label>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-aiu-ink-700 mb-1.5">Recruitment message</label>
+                                <textarea wire:model="recruitmentMessage" rows="3" maxlength="1000"
+                                          placeholder="Describe your team and what kind of teammate you're looking for…"
+                                          class="input-3d w-full px-3 py-2.5 rounded-lg text-sm leading-relaxed"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-aiu-ink-700 mb-1.5">Skills you need</label>
+                                <input type="text" wire:model="lookingForSkills" maxlength="200"
+                                       placeholder="e.g. React, ML, UI/UX, Pitching"
+                                       class="input-3d w-full px-3 py-2.5 rounded-lg text-sm">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                @if ($recruitingSaved)
+                                    <p class="text-xs text-emerald-600 font-semibold">{{ $recruitingSaved }}</p>
+                                @else
+                                    <span></span>
+                                @endif
+                                <button wire:click="saveRecruiting" type="button" class="btn-aiu px-5 py-2 rounded-lg text-sm font-semibold">
+                                    Save recruiting settings
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                @endif
+
+                {{-- Current members --}}
+                <section class="card-3d rounded-3xl p-6 lg:p-7">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-[10px] uppercase tracking-[0.22em] text-aiu-ink-400 font-bold">Members</p>
+                            <h2 class="font-heading text-xl font-bold text-aiu-ink-900 mt-0.5">{{ $team->members->count() }} {{ $team->members->count() === 1 ? 'member' : 'members' }}</h2>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach ($team->members as $m)
+                            <a href="{{ route('users.show', $m->id) }}" target="_blank"
+                               class="surface-soft rounded-xl p-3 flex items-center gap-3 hover:ring-1 hover:ring-aiu-red/30 transition">
+                                <x-avatar :user="$m" size="md" :leader="$m->id === $team->leader_id" />
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-sm text-aiu-ink-900 truncate">
+                                        {{ $m->name }}
+                                        @if ($m->id === $team->leader_id)
+                                            <span class="text-aiu-red text-xs">★ Leader</span>
+                                        @endif
+                                    </p>
+                                    @if ($m->pivot->role_in_team)
+                                        <p class="text-xs text-aiu-ink-600 truncate">{{ $m->pivot->role_in_team }}</p>
+                                    @endif
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+
+                {{-- Pending applications (leader only) --}}
+                @if ($isLeader)
+                    <section class="card-3d rounded-3xl p-6 lg:p-7">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-[10px] uppercase tracking-[0.22em] text-aiu-ink-400 font-bold">Inbox</p>
+                                <h2 class="font-heading text-xl font-bold text-aiu-ink-900 mt-0.5">
+                                    Pending applications
+                                    @if ($pendingApplications->isNotEmpty())
+                                        <span class="ml-2 inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 rounded-full bg-aiu-red text-white text-xs">{{ $pendingApplications->count() }}</span>
+                                    @endif
+                                </h2>
+                            </div>
+                        </div>
+
+                        @if ($pendingApplications->isEmpty())
+                            <div class="surface-soft rounded-xl p-6 text-center text-sm text-aiu-ink-500">
+                                No pending applications. Applications will appear here when people request to join your team.
+                            </div>
+                        @else
+                            <div class="space-y-4">
+                                @foreach ($pendingApplications as $app)
+                                    <div class="surface-soft rounded-xl p-4 lg:p-5">
+                                        <div class="flex items-start gap-3">
+                                            <a href="{{ route('users.show', $app->user_id) }}" target="_blank" class="shrink-0">
+                                                <x-avatar :user="$app->user" size="md" />
+                                            </a>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-start justify-between gap-3 mb-1">
+                                                    <div>
+                                                        <a href="{{ route('users.show', $app->user_id) }}" target="_blank" class="font-semibold text-sm text-aiu-ink-900 hover:text-aiu-red">
+                                                            {{ $app->user->name }}
+                                                        </a>
+                                                        <p class="text-[11px] text-aiu-ink-500">
+                                                            {{ $app->user->email }}
+                                                            @if ($app->user->institution)
+                                                                <span class="text-aiu-ink-400">·</span> {{ $app->user->institution }}
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                    <span class="text-[11px] text-aiu-ink-400 shrink-0">{{ $app->created_at->diffForHumans() }}</span>
+                                                </div>
+
+                                                @if ($app->skills)
+                                                    <p class="mt-1 text-xs"><span class="font-semibold text-aiu-ink-700">Skills:</span> <span class="text-aiu-ink-600">{{ $app->skills }}</span></p>
+                                                @endif
+                                                <p class="mt-2 text-sm text-aiu-ink-700 leading-relaxed whitespace-pre-line">{{ $app->message }}</p>
+
+                                                <div class="mt-3">
+                                                    <label class="block text-[11px] font-semibold text-aiu-ink-700 mb-1">Optional response message</label>
+                                                    <input type="text" wire:model="applicationResponses.{{ $app->id }}" maxlength="500"
+                                                           placeholder="Add a short note (sent to the applicant)"
+                                                           class="input-3d w-full px-3 py-2 rounded-lg text-xs">
+                                                </div>
+
+                                                <div class="mt-3 flex items-center justify-end gap-2">
+                                                    <button wire:click="rejectApplication({{ $app->id }})"
+                                                            wire:confirm="Reject this application?"
+                                                            class="btn-soft px-3 py-1.5 rounded-lg text-xs font-semibold">
+                                                        Reject
+                                                    </button>
+                                                    <button wire:click="approveApplication({{ $app->id }})"
+                                                            wire:confirm="Approve this applicant and add them to your team?"
+                                                            class="btn-aiu px-4 py-1.5 rounded-lg text-xs font-semibold">
+                                                        Approve & add
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if ($reviewedApplications->isNotEmpty())
+                            <div class="mt-6 pt-4 border-t border-aiu-line">
+                                <p class="text-[10px] uppercase tracking-[0.22em] text-aiu-ink-400 font-bold mb-3">Recent decisions</p>
+                                <div class="space-y-2">
+                                    @foreach ($reviewedApplications as $app)
+                                        <div class="flex items-center gap-3 text-xs text-aiu-ink-600 px-3 py-2 rounded-lg surface-soft">
+                                            <x-avatar :user="$app->user" size="xs" />
+                                            <span class="font-semibold text-aiu-ink-700">{{ $app->user->name }}</span>
+                                            <span class="text-aiu-ink-400">·</span>
+                                            <span class="font-semibold {{ $app->status === 'approved' ? 'text-emerald-600' : ($app->status === 'rejected' ? 'text-aiu-red' : 'text-aiu-ink-500') }}">
+                                                {{ ucfirst($app->status) }}
+                                            </span>
+                                            <span class="text-aiu-ink-400 ml-auto">{{ optional($app->reviewed_at)->diffForHumans() }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </section>
+                @endif
             </div>
         @endif
     @endif

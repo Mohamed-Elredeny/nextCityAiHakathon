@@ -15,11 +15,13 @@ class Team extends Model
         'edition_id', 'theme_id', 'leader_id', 'name', 'slug',
         'tagline', 'logo_path', 'banner_path',
         'status', 'is_finalist', 'all_first_timers',
+        'is_recruiting', 'recruitment_message', 'looking_for_skills',
     ];
 
     protected $casts = [
         'is_finalist' => 'boolean',
         'all_first_timers' => 'boolean',
+        'is_recruiting' => 'boolean',
     ];
 
     public function getLogoUrlAttribute(): ?string
@@ -101,5 +103,15 @@ class Team extends Model
     public function judgeAssignments(): HasMany
     {
         return $this->hasMany(JudgeAssignment::class);
+    }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(TeamApplication::class);
+    }
+
+    public function pendingApplications(): HasMany
+    {
+        return $this->hasMany(TeamApplication::class)->where('status', TeamApplication::STATUS_PENDING);
     }
 }

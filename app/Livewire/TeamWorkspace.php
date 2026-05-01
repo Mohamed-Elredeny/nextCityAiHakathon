@@ -5,9 +5,12 @@ namespace App\Livewire;
 use App\Models\Phase;
 use App\Models\Submission;
 use App\Models\Team;
+use App\Models\TeamApplication;
 use App\Models\TeamComment;
+use App\Models\TeamMember;
 use App\Models\TeamWorkspaceDraft;
 use App\Models\Theme;
+use App\Services\CommunityNotificationService;
 use App\Services\SubmissionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +37,13 @@ class TeamWorkspace extends Component
     public $newBanner = null;
     public ?string $identitySaved = null;
 
-    public const STEPS = ['overview', 'report', 'submission', 'discussion'];
+    public bool $isRecruiting = false;
+    public string $recruitmentMessage = '';
+    public string $lookingForSkills = '';
+    public ?string $recruitingSaved = null;
+    public array $applicationResponses = [];
+
+    public const STEPS = ['overview', 'report', 'submission', 'discussion', 'team'];
 
     public string $slidesUrl = '';
     public string $repoUrl = '';
@@ -104,6 +113,9 @@ class TeamWorkspace extends Component
         $this->teamId = $team->id;
         $this->themeId = $team->theme_id;
         $this->tagline = (string) $team->tagline;
+        $this->isRecruiting = (bool) $team->is_recruiting;
+        $this->recruitmentMessage = (string) $team->recruitment_message;
+        $this->lookingForSkills = (string) $team->looking_for_skills;
         $this->loadDrafts();
         $this->loadSubmission();
     }
@@ -312,6 +324,103 @@ class TeamWorkspace extends Component
         }
     }
 
+    public function saveRecruiting(): void
+    {
+        $team = Team::find($this->teamId);
+        if (!$team) return;
+        if (Auth::id() !== $team->leader_id) return;
+
+        $this->validate([
+            'recruitmentMessage' => 'nullable|string|max:1000',
+            'lookingForSkills' => 'nullable|string|max:200',
+        ]);
+
+        $team->is_recruiting = (bool) $this->isRecruiting;
+        $team->recruitment_message = trim($this->recruitmentMessage) ?: null;
+        $team->looking_for_skills = trim($this->lookingForSkills) ?: null;
+        $team->save();
+
+        $this->recruitingSaved = $team->is_recruiting
+            ? 'Recruiting status saved — your team is now visible in the community.'
+            : 'Recruiting paused — your team is hidden from the recruitment list.';
+    }
+
+    public function approveApplication(int $applicationId): void
+    {
+        $team = Team::find($this->teamId);
+        if (!$team || Auth::id() !== $team->leader_id) return;
+
+        $app = TeamApplication::where('id', $applicationId)
+            ->where('team_id', $team->id)
+            ->where('status', TeamApplication::STATUS_PENDING)
+            ->first();
+        if (!$app) return;
+
+        if (TeamMember::where('user_id', $app->user_id)->exists()) {
+            $app->update([
+                'status' => TeamApplication::STATUS_REJECTED,
+                'reviewed_by' => Auth::id(),
+                'reviewed_at' => now(),
+                'response_message' => $this->applicationResponses[$applicationId]
+                    ?? 'Applicant joined another team in the meantime.',
+            ]);
+            $app->load(['team', 'reviewer']);
+            app(CommunityNotificationService::class)->notifyApplicationDecision($app);
+            unset($this->applicationResponses[$applicationId]);
+            return;
+        }
+
+        DB::transaction(function () use ($app, $team) {
+            TeamMember::create([
+                'team_id' => $team->id,
+                'user_id' => $app->user_id,
+                'role_in_team' => $app->skills,
+                'is_leader' => false,
+            ]);
+            $app->update([
+                'status' => TeamApplication::STATUS_APPROVED,
+                'reviewed_by' => Auth::id(),
+                'reviewed_at' => now(),
+                'response_message' => $this->applicationResponses[$app->id] ?? null,
+            ]);
+
+            $user = $app->user;
+            if ($user && method_exists($user, 'syncRoles')) {
+                if (!$user->hasRole('team_leader') && !$user->hasRole('team_member')) {
+                    $user->assignRole('team_member');
+                }
+            }
+        });
+
+        $app->load(['team', 'reviewer']);
+        app(CommunityNotificationService::class)->notifyApplicationDecision($app);
+
+        unset($this->applicationResponses[$applicationId]);
+    }
+
+    public function rejectApplication(int $applicationId): void
+    {
+        $team = Team::find($this->teamId);
+        if (!$team || Auth::id() !== $team->leader_id) return;
+
+        $app = TeamApplication::where('id', $applicationId)
+            ->where('team_id', $team->id)
+            ->where('status', TeamApplication::STATUS_PENDING)
+            ->first();
+        if (!$app) return;
+
+        $app->update([
+            'status' => TeamApplication::STATUS_REJECTED,
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+            'response_message' => $this->applicationResponses[$applicationId] ?? null,
+        ]);
+        $app->load(['team', 'reviewer']);
+        app(CommunityNotificationService::class)->notifyApplicationDecision($app);
+
+        unset($this->applicationResponses[$applicationId]);
+    }
+
     public function postComment(): void
     {
         $this->newComment = trim($this->newComment);
@@ -385,6 +494,23 @@ class TeamWorkspace extends Component
             }
         }
 
+        $pendingApplications = $team
+            ? TeamApplication::where('team_id', $team->id)
+                ->where('status', TeamApplication::STATUS_PENDING)
+                ->with('user')
+                ->orderBy('created_at')
+                ->get()
+            : collect();
+
+        $reviewedApplications = $team
+            ? TeamApplication::where('team_id', $team->id)
+                ->whereIn('status', [TeamApplication::STATUS_APPROVED, TeamApplication::STATUS_REJECTED, TeamApplication::STATUS_WITHDRAWN])
+                ->with('user')
+                ->orderByDesc('reviewed_at')
+                ->limit(20)
+                ->get()
+            : collect();
+
         return view('livewire.team-workspace', [
             'team' => $team,
             'themes' => $themes,
@@ -407,6 +533,8 @@ class TeamWorkspace extends Component
             'isSubmitted' => $isSubmitted,
             'isLeader' => $isLeader,
             'finalsAllowed' => $finalsAllowed,
+            'pendingApplications' => $pendingApplications,
+            'reviewedApplications' => $reviewedApplications,
         ]);
     }
 }

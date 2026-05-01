@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Next City AI Hackathon — Leaderboard' }}</title>
 
     <link rel="icon" type="image/png" href="{{ asset('img/aec-logo.png') }}">
@@ -229,6 +230,7 @@
             {{-- Desktop nav --}}
             <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
                 <a href="{{ route('home') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
+                <a href="{{ route('community') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Community</a>
                 @auth
                     @if (auth()->user()->hasAnyRole(['team_leader', 'team_member']))
                         <a href="{{ route('workspace') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Workspace</a>
@@ -243,6 +245,7 @@
                         <a href="{{ url('/admin') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Admin</a>
                     @endif
                     <span class="mx-2 h-5 w-px bg-aiu-line"></span>
+                    @livewire('notification-bell')
                     <a href="{{ route('profile') }}" class="inline-flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-aiu-ink-50 transition" title="My profile">
                         <x-avatar :user="auth()->user()" size="sm" />
                         <span class="text-xs text-aiu-ink-700 font-semibold hidden lg:inline">{{ auth()->user()->name }}</span>
@@ -271,6 +274,7 @@
              class="md:hidden border-t border-aiu-line bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col gap-1 text-sm font-medium">
                 <a href="{{ route('home') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
+                <a href="{{ route('community') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Community</a>
                 @auth
                     @if (auth()->user()->hasAnyRole(['team_leader', 'team_member']))
                         <a href="{{ route('workspace') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Workspace</a>
@@ -284,6 +288,7 @@
                     @if (auth()->user()->hasRole('super_admin'))
                         <a href="{{ url('/admin') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Admin</a>
                     @endif
+                    <a href="{{ route('notifications') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Notifications</a>
                     <a href="{{ route('profile') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">My profile</a>
                     <div class="my-1 h-px bg-aiu-line"></div>
                     <p class="px-3 pt-1 pb-2 text-[11px] text-aiu-ink-400">Signed in as <span class="text-aiu-ink-700 font-semibold">{{ auth()->user()->name }}</span></p>
@@ -317,5 +322,44 @@
     </footer>
 
     @livewireScripts
+
+    @auth
+        {{-- Real-time notifications via Pusher Channels.
+             Listens on private channel App.Models.User.{id} for the standard
+             Laravel notification broadcast, then dispatches a browser event
+             that the NotificationBell Alpine listener picks up to play sound + refresh. --}}
+        <script src="https://js.pusher.com/8.4/pusher.min.js"></script>
+        <script>
+            (function () {
+                const key = @json(config('broadcasting.connections.pusher.key'));
+                const cluster = @json(config('broadcasting.connections.pusher.options.cluster'));
+                if (!key) return;
+
+                // CSRF token + headers for the Laravel /broadcasting/auth endpoint
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content
+                    || @json(csrf_token());
+
+                const pusher = new Pusher(key, {
+                    cluster: cluster || 'eu',
+                    forceTLS: true,
+                    authEndpoint: '/broadcasting/auth',
+                    auth: {
+                        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+                    },
+                });
+
+                const channel = pusher.subscribe('private-App.Models.User.{{ auth()->id() }}');
+                channel.bind_global(function (eventName, data) {
+                    // Laravel broadcasts notifications as either:
+                    //   - 'Illuminate\\Notifications\\Events\\BroadcastNotificationCreated'
+                    //   - or the broadcastType() string ('community.notification')
+                    if (typeof eventName !== 'string') return;
+                    if (eventName.startsWith('pusher:')) return;
+                    // Tell the bell to refetch + play sound
+                    window.dispatchEvent(new CustomEvent('pusher-notification-arrived', { detail: data }));
+                });
+            })();
+        </script>
+    @endauth
 </body>
 </html>

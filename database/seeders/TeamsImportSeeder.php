@@ -31,8 +31,9 @@ class TeamsImportSeeder extends Seeder
         }
         $payload = json_decode(file_get_contents($path), true);
         $teams = $payload['teams'] ?? [];
-        if (empty($teams)) {
-            $this->command->warn('No teams in data file.');
+        $unaffiliated = $payload['unaffiliated'] ?? [];
+        if (empty($teams) && empty($unaffiliated)) {
+            $this->command->warn('No teams or registrants in data file.');
             return;
         }
 
@@ -89,7 +90,18 @@ class TeamsImportSeeder extends Seeder
             $created++;
         }
 
+        $individualCount = 0;
+        foreach ($unaffiliated as $row) {
+            $email = strtolower(trim((string) ($row['email'] ?? '')));
+            if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) continue;
+            $this->upsertUser($row, isLeader: false, teamSlug: 'unaffiliated');
+            $individualCount++;
+        }
+
+        $totalUsers = User::role(['team_leader', 'team_member'])->count();
         $this->command->info("Imported {$created} teams.");
+        $this->command->info("Imported {$individualCount} unaffiliated registrants (individuals + skipped team applicants).");
+        $this->command->info("Total participant accounts: {$totalUsers}");
         $this->command->info('Login: email = student email, password = National ID (fallback: ' . self::FALLBACK_PASSWORD . ')');
     }
 

@@ -1,12 +1,16 @@
 <?php
 
 use App\Livewire\BigScreen;
+use App\Livewire\CommunityHub;
+use App\Livewire\CommunityPostView;
 use App\Livewire\JudgeDashboard;
 use App\Livewire\MentorDashboard;
+use App\Livewire\NotificationCenter;
 use App\Livewire\ParticipantLogin;
 use App\Livewire\PeoplesChoiceVote;
 use App\Livewire\ProfileView;
 use App\Livewire\PublicLeaderboard;
+use App\Livewire\RecruitingTeams;
 use App\Livewire\TeamSubmissionPreview;
 use App\Livewire\TeamWorkspace;
 use App\Livewire\UserProfile;
@@ -20,6 +24,11 @@ Route::get('/screen', BigScreen::class)->name('screen');
 
 // Public read-only team submission page (visible to voters/judges/mentors/anyone)
 Route::get('/teams/{slug}', TeamSubmissionPreview::class)->name('teams.show');
+
+// Public Community Hub
+Route::get('/community', CommunityHub::class)->name('community');
+Route::get('/community/teams', RecruitingTeams::class)->name('community.teams');
+Route::get('/community/{post}', CommunityPostView::class)->whereNumber('post')->name('community.show');
 
 // Public user profile (read-only)
 Route::get('/u/{id}', ProfileView::class)->whereNumber('id')->name('users.show');
@@ -46,4 +55,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/judge', JudgeDashboard::class)->name('judge');
     Route::get('/mentor', MentorDashboard::class)->name('mentor');
     Route::get('/profile', UserProfile::class)->name('profile');
+    Route::get('/notifications', NotificationCenter::class)->name('notifications');
 });
