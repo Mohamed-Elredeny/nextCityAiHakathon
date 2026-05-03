@@ -4,6 +4,11 @@
         ? $team->submissions->keyBy('round')
         : \App\Models\Submission::where('team_id', $team->id)->get()->keyBy('round');
     $sub = $allSubs->get(\App\Models\Submission::ROUND_FINALS) ?? $allSubs->get(\App\Models\Submission::ROUND_ONE);
+    $teamMembersForRoles = $team->relationLoaded('teamMembers')
+        ? $team->teamMembers
+        : \App\Models\TeamMember::with('user')->where('team_id', $team->id)->get();
+    $coverage = $team->role_coverage;
+    $membersByRole = $teamMembersForRoles->groupBy('role_category');
     $sections = [
         'problem'       => 'Problem Statement',
         'solution'      => 'Proposed Solution',
@@ -34,6 +39,9 @@
                 @endif
             </div>
             <h3 class="font-heading text-2xl font-bold text-aiu-ink-900 mt-1">{{ $team->name }}</h3>
+            @if ($team->tagline)
+                <p class="mt-1 text-sm text-aiu-ink-600 italic leading-snug">{{ $team->tagline }}</p>
+            @endif
             @if ($team->is_finalist)
                 <span class="inline-block mt-2 text-[9px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-md
                              bg-aiu-red-50 text-aiu-red font-bold ring-1 ring-aiu-red/20">
@@ -91,6 +99,49 @@
                 @endif
             </div>
         @endif
+    </div>
+
+    {{-- Role coverage strip (visible to judges & mentors) --}}
+    <div class="mb-5 p-4 rounded-2xl bg-aiu-ink-50/50 ring-1 ring-aiu-line">
+        <div class="flex items-center justify-between gap-3 mb-3">
+            <p class="text-[10px] uppercase tracking-[0.18em] text-aiu-ink-400 font-bold">Team Composition</p>
+            @if (count($coverage['missing']) === 0)
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 text-[10px] uppercase tracking-wider font-bold">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    All 3 roles
+                </span>
+            @else
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-aiu-red-50 text-aiu-red ring-1 ring-aiu-red/20 text-[10px] uppercase tracking-wider font-bold">
+                    Missing {{ count($coverage['missing']) }}
+                </span>
+            @endif
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+            @foreach (\App\Models\User::ROLE_CATEGORIES as $key => $label)
+                @php
+                    $people = $membersByRole->get($key, collect());
+                    $filled = $people->isNotEmpty();
+                @endphp
+                <div class="rounded-xl px-3 py-2.5 ring-1
+                            {{ $filled ? 'bg-white ring-aiu-line' : 'bg-aiu-red-50/30 ring-aiu-red/20 ring-dashed' }}">
+                    <div class="flex items-center gap-1.5 mb-1.5">
+                        @if ($filled)
+                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        @else
+                            <svg class="w-3.5 h-3.5 text-aiu-red" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        @endif
+                        <p class="text-[11px] font-bold {{ $filled ? 'text-aiu-ink-900' : 'text-aiu-red' }}">{{ $label }}</p>
+                    </div>
+                    @if ($filled)
+                        <p class="text-[11px] text-aiu-ink-600 leading-snug truncate">
+                            {{ $people->pluck('user.name')->filter()->implode(', ') }}
+                        </p>
+                    @else
+                        <p class="text-[11px] text-aiu-red/80 italic">— vacant —</p>
+                    @endif
+                </div>
+            @endforeach
+        </div>
     </div>
 
     @if ($hasContent || $hasAiDisclosure)

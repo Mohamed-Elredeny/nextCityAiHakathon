@@ -144,6 +144,7 @@
 
                     <fieldset @if($isLocked) disabled @endif class="{{ $isLocked ? 'opacity-70' : '' }} space-y-5">
                         @foreach ($weights as $criterion => $weight)
+                            @php $current = (int) round((float) $scores[$criterion]); @endphp
                             <div>
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="text-sm font-bold text-aiu-ink-900 capitalize">
@@ -151,12 +152,22 @@
                                         <span class="ml-2 text-[10px] uppercase tracking-wider text-aiu-red font-bold">{{ ($weight * 100) }}%</span>
                                     </label>
                                     <span class="font-mono text-lg font-bold text-aiu-red tabular-nums w-12 text-right">
-                                        {{ number_format((float) $scores[$criterion], 1) }}
+                                        {{ $current ?: '—' }}
                                     </span>
                                 </div>
-                                <input type="range" min="0" max="10" step="0.5"
-                                       wire:model.live="scores.{{ $criterion }}"
-                                       class="slider-aiu w-full">
+                                <div class="grid grid-cols-10 gap-1.5">
+                                    @for ($n = 1; $n <= 10; $n++)
+                                        <button type="button"
+                                                wire:click="$set('scores.{{ $criterion }}', {{ $n }})"
+                                                @if($isLocked) disabled @endif
+                                                class="h-9 rounded-md text-xs font-bold tabular-nums ring-1 transition
+                                                       {{ $current === $n
+                                                            ? 'bg-aiu-red text-white ring-aiu-red shadow-sm'
+                                                            : 'bg-white text-aiu-ink-700 ring-aiu-line hover:ring-aiu-red/40 hover:text-aiu-red' }}">
+                                            {{ $n }}
+                                        </button>
+                                    @endfor
+                                </div>
                             </div>
                         @endforeach
 
@@ -195,6 +206,23 @@
                                 Lock final score
                             </button>
                         </div>
+
+                        <details class="mt-6 pt-5 border-t border-aiu-line">
+                            <summary class="cursor-pointer text-xs text-aiu-ink-500 hover:text-aiu-red font-semibold inline-flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg>
+                                I have a conflict of interest with this team
+                            </summary>
+                            <div class="mt-3 surface-soft rounded-xl p-4 space-y-3">
+                                <p class="text-xs text-aiu-ink-600 leading-relaxed">If you can't fairly evaluate this team (e.g. you mentored them, they're family, you have a business relationship), recuse yourself here. Your draft will be discarded and the team removed from your list.</p>
+                                <textarea wire:model="recuseReason" rows="2" placeholder="Briefly describe the conflict (visible to organizers only)…"
+                                          class="input-3d w-full px-3 py-2 rounded-lg text-xs"></textarea>
+                                <button wire:click="selfRecuse"
+                                        wire:confirm="Recuse yourself from {{ $selectedTeam->name }}? Your draft for this team will be lost."
+                                        class="btn-soft px-4 py-1.5 rounded-lg text-xs font-bold text-aiu-red ring-1 ring-aiu-red/20 hover:bg-aiu-red-50">
+                                    Recuse from this team
+                                </button>
+                            </div>
+                        </details>
                     @endunless
                 </div>
 

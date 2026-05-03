@@ -172,6 +172,24 @@ class CommunityNotificationService
         ]));
     }
 
+    public function notifyApplicationWithdrawn(TeamApplication $application): void
+    {
+        $team = $application->team;
+        if (!$team || !$team->leader_id) return;
+
+        $leader = User::find($team->leader_id);
+        if (!$leader) return;
+
+        $leader->notify(new CommunityNotification([
+            'type' => CommunityNotification::TYPE_APPLICATION_WITHDRAWN,
+            'application_id' => $application->id,
+            'team_id' => $team->id,
+            'team_name' => $team->name,
+            'actor_id' => $application->user_id,
+            'actor_name' => $application->user?->name,
+        ]));
+    }
+
     public function notifyApplicationDecision(TeamApplication $application): void
     {
         $applicant = User::find($application->user_id);

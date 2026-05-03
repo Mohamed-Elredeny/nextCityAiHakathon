@@ -57,6 +57,21 @@
                         <input type="text" wire:model="headline" placeholder="e.g. ML engineer · Cairo University" class="input-3d w-full px-3 py-2.5 rounded-lg text-sm">
                         @error('headline') <p class="mt-1 text-xs text-aiu-red">{{ $message }}</p> @enderror
                     </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold mb-1.5">Primary role on a team</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            @foreach (\App\Models\User::ROLE_CATEGORIES as $key => $label)
+                                <label class="cursor-pointer">
+                                    <input type="radio" wire:model="primaryRole" value="{{ $key }}" class="peer sr-only">
+                                    <div class="px-3 py-2.5 rounded-lg text-center text-xs font-semibold ring-1 ring-aiu-line bg-white text-aiu-ink-700 hover:ring-aiu-red/40 peer-checked:bg-aiu-red peer-checked:text-white peer-checked:ring-aiu-red transition">
+                                        {{ $label }}
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+                        <p class="mt-1.5 text-[11px] text-aiu-ink-500">Pick what you bring to a team. Used by leaders looking for missing roles.</p>
+                        @error('primaryRole') <p class="mt-1 text-xs text-aiu-red">{{ $message }}</p> @enderror
+                    </div>
                     <div>
                         <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold mb-1.5">Email</label>
                         <input type="email" value="{{ $email }}" disabled class="input-3d w-full px-3 py-2.5 rounded-lg text-sm opacity-60 cursor-not-allowed">

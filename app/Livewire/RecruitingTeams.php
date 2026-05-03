@@ -75,6 +75,19 @@ class RecruitingTeams extends Component
             return;
         }
 
+        // 24-hour cooldown after a rejection by the same team — prevents spam.
+        $recentRejection = TeamApplication::where('team_id', $team->id)
+            ->where('user_id', $user->id)
+            ->where('status', TeamApplication::STATUS_REJECTED)
+            ->where('reviewed_at', '>=', now()->subHours(24))
+            ->latest('reviewed_at')
+            ->first();
+        if ($recentRejection) {
+            $hoursLeft = (int) ceil(now()->diffInHours($recentRejection->reviewed_at->addDay(), false));
+            $this->applyError = "You can re-apply to this team in {$hoursLeft} hour" . ($hoursLeft === 1 ? '' : 's') . '.';
+            return;
+        }
+
         $this->validate([
             'applicationMessage' => 'required|string|min:20|max:1000',
             'applicationSkills' => 'nullable|string|max:200',
@@ -107,6 +120,10 @@ class RecruitingTeams extends Component
         if ($app->status !== TeamApplication::STATUS_PENDING) return;
 
         $app->update(['status' => TeamApplication::STATUS_WITHDRAWN]);
+
+        $app->load(['team', 'user']);
+        app(CommunityNotificationService::class)->notifyApplicationWithdrawn($app);
+
         $this->applySuccess = 'Application withdrawn.';
     }
 

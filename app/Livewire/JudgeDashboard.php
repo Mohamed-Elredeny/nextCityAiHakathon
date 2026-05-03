@@ -94,6 +94,10 @@ class JudgeDashboard extends Component
         if (!$this->selectedTeamId) return;
         $team = Team::find($this->selectedTeamId);
         if (!$team) return;
+        if (!$service->isJudgingOpen($team->edition_id, $this->round)) {
+            $this->errorMessage = 'Judging window is not open for this round right now.';
+            return;
+        }
         try {
             $service->saveDraft(Auth::user(), $team, $this->round, $this->scores, $this->comment ?: null);
             $this->successMessage = 'Draft saved.';
@@ -122,6 +126,53 @@ class JudgeDashboard extends Component
         $this->newMessage = '';
     }
 
+    public string $recuseReason = '';
+
+    public function selfRecuse(): void
+    {
+        $this->errorMessage = null;
+        $this->successMessage = null;
+        $reason = trim($this->recuseReason);
+        if (!$this->selectedTeamId || $reason === '') {
+            $this->errorMessage = 'Please describe the conflict of interest before recusing.';
+            return;
+        }
+
+        $assignment = JudgeAssignment::where([
+            'judge_id' => Auth::id(),
+            'team_id' => $this->selectedTeamId,
+            'round' => $this->round,
+        ])->first();
+        if (!$assignment) return;
+
+        // Refuse to self-recuse if the score is already locked.
+        $hasLocked = Score::where([
+            'judge_id' => Auth::id(),
+            'team_id' => $this->selectedTeamId,
+            'round' => $this->round,
+        ])->whereNotNull('locked_at')->exists();
+        if ($hasLocked) {
+            $this->errorMessage = 'This score is already locked. Contact an organizer to remove it.';
+            return;
+        }
+
+        $assignment->update([
+            'recused' => true,
+            'recused_reason' => $reason,
+        ]);
+
+        \App\Models\AuditLog::record('judge.self_recused', $assignment, [
+            'judge_id' => Auth::id(),
+            'team_id' => $this->selectedTeamId,
+            'round' => $this->round,
+            'reason' => $reason,
+        ]);
+
+        $this->selectedTeamId = null;
+        $this->recuseReason = '';
+        $this->successMessage = 'Recused. The team has been removed from your list.';
+    }
+
     public function lockScore(ScoringService $service): void
     {
         $this->errorMessage = null;
@@ -129,6 +180,10 @@ class JudgeDashboard extends Component
         if (!$this->selectedTeamId) return;
         $team = Team::find($this->selectedTeamId);
         if (!$team) return;
+        if (!$service->isJudgingOpen($team->edition_id, $this->round)) {
+            $this->errorMessage = 'Judging window is not open for this round right now.';
+            return;
+        }
         try {
             $service->lock(Auth::user(), $team, $this->round, $this->scores, $this->comment ?: null);
             $this->successMessage = 'Score locked. The leaderboard will update.';
@@ -144,7 +199,7 @@ class JudgeDashboard extends Component
         $assignments = JudgeAssignment::where('judge_id', $judge->id)
             ->where('round', $this->round)
             ->where('recused', false)
-            ->with(['team.theme', 'team.submission'])
+            ->with(['team.theme', 'team.submission', 'team.teamMembers.user'])
             ->get();
 
         $teamIds = $assignments->pluck('team_id');

@@ -18,6 +18,7 @@ class UserProfile extends Component
     public string $phone = '';
     public string $institution = '';
     public string $headline = '';
+    public string $primaryRole = '';
     public string $bio = '';
     public array $socialLinks = ['linkedin' => '', 'github' => '', 'twitter' => '', 'website' => ''];
     public $avatar = null;
@@ -33,6 +34,7 @@ class UserProfile extends Component
         $this->phone = (string) $u->phone;
         $this->institution = (string) $u->institution;
         $this->headline = (string) $u->headline;
+        $this->primaryRole = (string) $u->primary_role;
         $this->bio = (string) $u->bio;
         $existing = $u->social_links ?? [];
         $this->socialLinks = array_merge(['linkedin' => '', 'github' => '', 'twitter' => '', 'website' => ''], is_array($existing) ? $existing : []);
@@ -48,6 +50,7 @@ class UserProfile extends Component
             'phone' => 'nullable|string|max:50',
             'institution' => 'nullable|string|max:255',
             'headline' => 'nullable|string|max:120',
+            'primaryRole' => 'nullable|in:'.implode(',', array_keys(User::ROLE_CATEGORIES)),
             'bio' => 'nullable|string|max:2000',
             'socialLinks.linkedin' => 'nullable|url|max:255',
             'socialLinks.github' => 'nullable|url|max:255',
@@ -75,9 +78,15 @@ class UserProfile extends Component
             'phone' => $this->phone ?: null,
             'institution' => $this->institution ?: null,
             'headline' => $this->headline ?: null,
+            'primary_role' => $this->primaryRole ?: null,
             'bio' => $this->bio ?: null,
             'social_links' => array_filter($this->socialLinks, fn ($v) => filled($v)),
         ])->save();
+
+        if ($this->primaryRole) {
+            \App\Models\TeamMember::where('user_id', $u->id)
+                ->update(['role_category' => $this->primaryRole]);
+        }
 
         $this->savedMessage = 'Profile updated';
     }

@@ -223,9 +223,6 @@
                                             @endif
                                             <div class="min-w-0 flex-1">
                                                 <p class="font-heading font-bold text-aiu-ink-900 text-sm sm:text-base">{{ $team->name }}</p>
-                                                @if ($team->tagline)
-                                                    <p class="hidden sm:block text-[10px] text-aiu-ink-500 italic line-clamp-1 mt-0.5">{{ $team->tagline }}</p>
-                                                @endif
                                                 {{-- On mobile, surface theme inline since the Theme column is hidden --}}
                                                 <p class="sm:hidden text-[11px] text-aiu-ink-600 mt-0.5 truncate">{{ $team->theme?->name ?? '—' }}</p>
                                                 <div class="mt-1 flex flex-wrap items-center gap-1.5">
@@ -330,6 +327,34 @@
                                                     {{ $team->name }} · Detailed Breakdown
                                                 </p>
                                                 <div class="h-px flex-1 bg-aiu-line"></div>
+                                            </div>
+
+                                            @if ($team->tagline)
+                                                <p class="text-sm text-aiu-ink-700 italic mb-4 max-w-3xl mx-auto text-center">
+                                                    {{ $team->tagline }}
+                                                </p>
+                                            @endif
+
+                                            @php $cov = $team->role_coverage; @endphp
+                                            <div class="flex flex-wrap items-center justify-center gap-2 mb-5">
+                                                <span class="text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold mr-1">Roles:</span>
+                                                @foreach (\App\Models\User::ROLE_CATEGORIES as $key => $label)
+                                                    @php $has = in_array($key, $cov['filled'], true); @endphp
+                                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ring-1
+                                                                 {{ $has
+                                                                    ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                                                                    : 'bg-aiu-red-50 text-aiu-red ring-aiu-red/20' }}">
+                                                        @if ($has)
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                                        @else
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                        @endif
+                                                        {{ $label }}
+                                                    </span>
+                                                @endforeach
+                                                @if (!empty($cov['missing']))
+                                                    <span class="text-[10px] text-aiu-red font-semibold ml-1">· Missing {{ count($cov['missing']) }} role{{ count($cov['missing']) === 1 ? '' : 's' }}</span>
+                                                @endif
                                             </div>
 
                                             <div class="overflow-x-auto card-3d rounded-xl">

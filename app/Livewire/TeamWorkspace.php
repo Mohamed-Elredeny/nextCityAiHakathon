@@ -8,6 +8,7 @@ use App\Models\Team;
 use App\Models\TeamApplication;
 use App\Models\TeamComment;
 use App\Models\TeamMember;
+use App\Models\User;
 use App\Models\TeamWorkspaceDraft;
 use App\Models\Theme;
 use App\Services\CommunityNotificationService;
@@ -108,6 +109,8 @@ class TeamWorkspace extends Component
         $user = Auth::user();
         $team = $user?->currentTeam();
         if (!$team) {
+            // No active team — bounce to recruiting so the user can join one.
+            $this->redirect(route('community.teams'), navigate: false);
             return;
         }
         $this->teamId = $team->id;
@@ -335,6 +338,24 @@ class TeamWorkspace extends Component
             'lookingForSkills' => 'nullable|string|max:200',
         ]);
 
+        // A team without a logo on the public recruiting board looks abandoned.
+        // Require leaders to upload one before going live.
+        if ($this->isRecruiting && !$team->logo_path) {
+            $this->recruitingSaved = null;
+            $this->addError('isRecruiting', 'Upload a team logo first — recruiting cards look abandoned without one.');
+            $this->isRecruiting = false;
+            return;
+        }
+
+        // Once the team is at the size cap, recruiting is meaningless.
+        $size = $team->teamMembers()->count();
+        if ($this->isRecruiting && $size >= Team::MAX_MEMBERS) {
+            $this->recruitingSaved = null;
+            $this->addError('isRecruiting', 'Team is already at the ' . Team::MAX_MEMBERS . '-member limit.');
+            $this->isRecruiting = false;
+            return;
+        }
+
         $team->is_recruiting = (bool) $this->isRecruiting;
         $team->recruitment_message = trim($this->recruitmentMessage) ?: null;
         $team->looking_for_skills = trim($this->lookingForSkills) ?: null;
@@ -345,8 +366,11 @@ class TeamWorkspace extends Component
             : 'Recruiting paused — your team is hidden from the recruitment list.';
     }
 
+    public ?string $applicationError = null;
+
     public function approveApplication(int $applicationId): void
     {
+        $this->applicationError = null;
         $team = Team::find($this->teamId);
         if (!$team || Auth::id() !== $team->leader_id) return;
 
@@ -370,11 +394,44 @@ class TeamWorkspace extends Component
             return;
         }
 
-        DB::transaction(function () use ($app, $team) {
+        // Capacity check: refuse if the team is already at MAX_MEMBERS.
+        $currentSize = TeamMember::where('team_id', $team->id)->count();
+        if ($currentSize >= Team::MAX_MEMBERS) {
+            $app->update([
+                'status' => TeamApplication::STATUS_REJECTED,
+                'reviewed_by' => Auth::id(),
+                'reviewed_at' => now(),
+                'response_message' => 'Team is at the ' . Team::MAX_MEMBERS . '-member limit.',
+            ]);
+            $team->update(['is_recruiting' => false]);
+            unset($this->applicationResponses[$applicationId]);
+            return;
+        }
+
+        try {
+            DB::transaction(function () use ($app, $team) {
+                // Re-check inside the transaction with row-locks to avoid races
+                // (two leaders/admins approving at the same moment, or the same
+                // applicant getting approved on two teams concurrently).
+                $alreadyOnTeam = TeamMember::where('user_id', $app->user_id)
+                    ->lockForUpdate()
+                    ->exists();
+                if ($alreadyOnTeam) {
+                    throw new \RuntimeException('Applicant joined another team in the meantime.');
+                }
+                $sizeNow = TeamMember::where('team_id', $team->id)
+                    ->lockForUpdate()
+                    ->count();
+                if ($sizeNow >= Team::MAX_MEMBERS) {
+                    throw new \RuntimeException('Team is at the ' . Team::MAX_MEMBERS . '-member limit.');
+                }
+
+                $applicant = User::find($app->user_id);
             TeamMember::create([
                 'team_id' => $team->id,
                 'user_id' => $app->user_id,
                 'role_in_team' => $app->skills,
+                'role_category' => $applicant?->primary_role,
                 'is_leader' => false,
             ]);
             $app->update([
@@ -384,13 +441,31 @@ class TeamWorkspace extends Component
                 'response_message' => $this->applicationResponses[$app->id] ?? null,
             ]);
 
-            $user = $app->user;
-            if ($user && method_exists($user, 'syncRoles')) {
-                if (!$user->hasRole('team_leader') && !$user->hasRole('team_member')) {
-                    $user->assignRole('team_member');
-                }
+            if ($applicant && !$applicant->hasRole('team_leader') && !$applicant->hasRole('team_member')) {
+                $applicant->assignRole('team_member');
             }
-        });
+
+                // Auto-disable recruiting once every needed_role is filled (P1.8)
+                $team->refresh()->load('teamMembers');
+                $needed = (array) ($team->needed_roles ?? []);
+                if ($team->is_recruiting && !empty($needed)) {
+                    $filled = $team->role_coverage['filled'];
+                    $stillNeeded = array_diff($needed, $filled);
+                    if (empty($stillNeeded)) {
+                        $team->update(['is_recruiting' => false, 'needed_roles' => []]);
+                    }
+                }
+            });
+        } catch (\Throwable $e) {
+            $this->applicationError = $e->getMessage();
+            return;
+        }
+
+        \App\Models\AuditLog::record('application.approved', $app, [
+            'team_id' => $team->id,
+            'applicant_id' => $app->user_id,
+            'reviewer_id' => Auth::id(),
+        ]);
 
         $app->load(['team', 'reviewer']);
         app(CommunityNotificationService::class)->notifyApplicationDecision($app);
@@ -415,10 +490,125 @@ class TeamWorkspace extends Component
             'reviewed_at' => now(),
             'response_message' => $this->applicationResponses[$applicationId] ?? null,
         ]);
+
+        \App\Models\AuditLog::record('application.rejected', $app, [
+            'team_id' => $team->id,
+            'applicant_id' => $app->user_id,
+            'reviewer_id' => Auth::id(),
+        ]);
+
         $app->load(['team', 'reviewer']);
         app(CommunityNotificationService::class)->notifyApplicationDecision($app);
 
         unset($this->applicationResponses[$applicationId]);
+    }
+
+    public function transferLeadership(int $newLeaderUserId): void
+    {
+        $team = Team::find($this->teamId);
+        if (!$team || Auth::id() !== $team->leader_id) return;
+        if ($newLeaderUserId === $team->leader_id) return;
+
+        $isOnTeam = TeamMember::where('team_id', $team->id)
+            ->where('user_id', $newLeaderUserId)
+            ->exists();
+        if (!$isOnTeam) return;
+
+        $previousLeaderId = $team->leader_id;
+        DB::transaction(function () use ($team, $newLeaderUserId) {
+            TeamMember::where('team_id', $team->id)->update(['is_leader' => false]);
+            TeamMember::where('team_id', $team->id)
+                ->where('user_id', $newLeaderUserId)
+                ->update(['is_leader' => true]);
+            $team->update(['leader_id' => $newLeaderUserId]);
+
+            $newLeader = User::find($newLeaderUserId);
+            if ($newLeader && !$newLeader->hasRole('team_leader')) {
+                $newLeader->assignRole('team_leader');
+            }
+        });
+
+        \App\Models\AuditLog::record('team.leadership_transferred', $team, [
+            'team_id' => $team->id,
+            'from_user_id' => $previousLeaderId,
+            'to_user_id' => $newLeaderUserId,
+        ]);
+
+        $this->dispatch('leadership-transferred');
+    }
+
+    public function kickMember(int $userId): void
+    {
+        $team = Team::find($this->teamId);
+        if (!$team || Auth::id() !== $team->leader_id) return;
+        if ($userId === $team->leader_id) return;
+
+        TeamMember::where('team_id', $team->id)
+            ->where('user_id', $userId)
+            ->delete();
+
+        \App\Models\AuditLog::record('team.member_kicked', $team, [
+            'team_id' => $team->id,
+            'kicked_user_id' => $userId,
+            'by_user_id' => Auth::id(),
+        ]);
+
+        $this->dispatch('member-removed');
+    }
+
+    public function leaveTeam(): void
+    {
+        $team = Team::find($this->teamId);
+        if (!$team) return;
+
+        $userId = Auth::id();
+        if ($userId === $team->leader_id) return;
+
+        TeamMember::where('team_id', $team->id)
+            ->where('user_id', $userId)
+            ->delete();
+
+        \App\Models\AuditLog::record('team.member_left', $team, [
+            'user_id' => $userId,
+            'team_id' => $team->id,
+        ]);
+
+        $this->teamId = null;
+        $this->dispatch('left-team');
+        $this->redirect(route('community.teams'), navigate: false);
+    }
+
+    public function disbandTeam(): void
+    {
+        $team = Team::find($this->teamId);
+        if (!$team || Auth::id() !== $team->leader_id) return;
+
+        $remainingMembers = TeamMember::where('team_id', $team->id)
+            ->where('user_id', '!=', $team->leader_id)
+            ->count();
+
+        // Only allow disband when the leader is the last person standing.
+        if ($remainingMembers > 0) return;
+
+        DB::transaction(function () use ($team) {
+            TeamMember::where('team_id', $team->id)->delete();
+            TeamApplication::where('team_id', $team->id)
+                ->where('status', TeamApplication::STATUS_PENDING)
+                ->update(['status' => TeamApplication::STATUS_REJECTED, 'reviewed_at' => now(), 'response_message' => 'Team was disbanded.']);
+            $team->update([
+                'status' => 'withdrawn',
+                'is_recruiting' => false,
+            ]);
+        });
+
+        \App\Models\AuditLog::record('team.disbanded', $team, [
+            'team_id' => $team->id,
+            'leader_id' => $team->leader_id,
+        ]);
+
+        $this->teamId = null;
+        $this->dispatch('team-disbanded');
+        $this->redirect(route('community.teams'), navigate: false);
     }
 
     public function postComment(): void

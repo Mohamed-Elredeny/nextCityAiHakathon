@@ -90,6 +90,33 @@ class TeamResource extends Resource
                         }),
                 ]),
 
+            Forms\Components\Section::make('Recruiting')
+                ->columns(2)
+                ->schema([
+                    Forms\Components\Toggle::make('is_recruiting')
+                        ->label('Open to applications')
+                        ->live()
+                        ->columnSpanFull(),
+                    Forms\Components\Textarea::make('recruitment_message')
+                        ->label("What we're looking for")
+                        ->rows(3)
+                        ->maxLength(1000)
+                        ->visible(fn ($get) => (bool) $get('is_recruiting'))
+                        ->columnSpanFull(),
+                    Forms\Components\CheckboxList::make('needed_roles')
+                        ->label('Roles needed')
+                        ->options(\App\Models\User::ROLE_CATEGORIES)
+                        ->columns(3)
+                        ->visible(fn ($get) => (bool) $get('is_recruiting'))
+                        ->helperText('Surfaced as chips on the public recruiting board.')
+                        ->columnSpanFull(),
+                    Forms\Components\TextInput::make('looking_for_skills')
+                        ->label('Specific skills (free text)')
+                        ->maxLength(255)
+                        ->visible(fn ($get) => (bool) $get('is_recruiting'))
+                        ->columnSpanFull(),
+                ]),
+
             Forms\Components\Section::make('Status')
                 ->columns(3)
                 ->schema([

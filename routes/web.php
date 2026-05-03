@@ -52,8 +52,12 @@ Route::post('/logout', function (Request $request) {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/workspace', TeamWorkspace::class)->name('workspace');
-    Route::get('/judge', JudgeDashboard::class)->name('judge');
-    Route::get('/mentor', MentorDashboard::class)->name('mentor');
+    Route::get('/judge', JudgeDashboard::class)
+        ->middleware('role:judge|super_admin')
+        ->name('judge');
+    Route::get('/mentor', MentorDashboard::class)
+        ->middleware('role:mentor|super_admin')
+        ->name('mentor');
     Route::get('/profile', UserProfile::class)->name('profile');
     Route::get('/notifications', NotificationCenter::class)->name('notifications');
 });

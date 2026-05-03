@@ -20,6 +20,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // Trust X-Forwarded-* headers from the Apache reverse proxy so Laravel
         // generates HTTPS URLs even when PHP sees the request as plain http.
         $middleware->trustProxies(at: '*');
+
+        // Spatie Permission middleware aliases for route-level role checks.
+        $middleware->alias([
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

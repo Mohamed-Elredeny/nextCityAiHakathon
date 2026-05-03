@@ -28,7 +28,7 @@ class TeamSubmissionPreview extends Component
     #[Layout('components.layouts.public')]
     public function render()
     {
-        $team = Team::with(['theme', 'leader', 'members', 'submissions'])
+        $team = Team::with(['theme', 'leader', 'members', 'teamMembers.user', 'submissions'])
             ->where('slug', $this->slug)
             ->first();
 

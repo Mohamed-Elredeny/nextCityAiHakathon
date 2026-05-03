@@ -22,8 +22,14 @@ class MembersRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->schema([
+            Forms\Components\Select::make('role_category')
+                ->label('Role category')
+                ->options(User::ROLE_CATEGORIES)
+                ->placeholder('Pick one')
+                ->helperText('Used to track which core roles a team has filled.')
+                ->native(false),
             Forms\Components\TextInput::make('role_in_team')
-                ->label('Role in team')
+                ->label('Role title (free text)')
                 ->placeholder('e.g. ML lead, frontend, designer')
                 ->maxLength(120),
             Forms\Components\Toggle::make('is_leader')
@@ -39,8 +45,19 @@ class MembersRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable()->weight('semibold'),
                 Tables\Columns\TextColumn::make('email')->searchable()->copyable(),
+                Tables\Columns\TextColumn::make('pivot.role_category')
+                    ->label('Category')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state) => $state ? (User::ROLE_CATEGORIES[$state] ?? $state) : null)
+                    ->color(fn (?string $state) => match ($state) {
+                        'designer' => 'info',
+                        'developer' => 'success',
+                        'business' => 'warning',
+                        default => 'gray',
+                    })
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('pivot.role_in_team')
-                    ->label('Role in team')
+                    ->label('Role')
                     ->placeholder('—'),
                 Tables\Columns\IconColumn::make('pivot.is_leader')
                     ->label('Leader')
@@ -58,7 +75,11 @@ class MembersRelationManager extends RelationManager
                                 ->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
                                 ->limit(20)
                                 ->pluck('name', 'id')),
-                        Forms\Components\TextInput::make('role_in_team')->label('Role in team')->maxLength(120),
+                        Forms\Components\Select::make('role_category')
+                            ->label('Role category')
+                            ->options(User::ROLE_CATEGORIES)
+                            ->native(false),
+                        Forms\Components\TextInput::make('role_in_team')->label('Role title')->maxLength(120),
                         Forms\Components\Toggle::make('is_leader')->label('Set as leader'),
                     ])
                     ->after(function (array $data, $record, $livewire) {
@@ -79,7 +100,11 @@ class MembersRelationManager extends RelationManager
                         Forms\Components\TextInput::make('email')->email()->required()->unique('users', 'email'),
                         Forms\Components\TextInput::make('phone')->tel(),
                         Forms\Components\TextInput::make('institution'),
-                        Forms\Components\TextInput::make('role_in_team')->label('Role in team'),
+                        Forms\Components\Select::make('role_category')
+                            ->label('Role category')
+                            ->options(User::ROLE_CATEGORIES)
+                            ->native(false),
+                        Forms\Components\TextInput::make('role_in_team')->label('Role title'),
                         Forms\Components\Toggle::make('is_leader')->label('Set as leader'),
                     ])
                     ->action(function (array $data, $livewire) {
@@ -93,6 +118,7 @@ class MembersRelationManager extends RelationManager
                         $user->assignRole('team_member');
                         $livewire->getOwnerRecord()->members()->attach($user->id, [
                             'role_in_team' => $data['role_in_team'] ?? null,
+                            'role_category' => $data['role_category'] ?? null,
                             'is_leader' => (bool) ($data['is_leader'] ?? false),
                         ]);
                         if (!empty($data['is_leader'])) {

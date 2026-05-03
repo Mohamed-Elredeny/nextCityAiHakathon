@@ -86,6 +86,17 @@
                             </div>
                         </div>
 
+                        @if (filled($team->needed_roles))
+                            <div class="flex flex-wrap gap-1.5 mb-3">
+                                @foreach ($team->needed_roles as $role)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-aiu-red text-white text-[11px] font-bold uppercase tracking-wider ring-1 ring-aiu-red/30">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
+                                        Needs {{ \App\Models\User::ROLE_CATEGORIES[$role] ?? ucfirst($role) }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
+
                         @if ($team->recruitment_message)
                             <div class="surface-soft rounded-xl px-4 py-3 mb-3">
                                 <p class="text-xs uppercase tracking-wider font-bold text-aiu-ink-500 mb-1">What we're looking for</p>

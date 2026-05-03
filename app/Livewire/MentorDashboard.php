@@ -61,7 +61,7 @@ class MentorDashboard extends Component
     {
         $mentorId = Auth::id();
         $teamIds = MentorAssignment::where('mentor_id', $mentorId)->pluck('team_id');
-        $teams = Team::whereIn('id', $teamIds)->with(['theme', 'submission'])->orderBy('name')->get();
+        $teams = Team::whereIn('id', $teamIds)->with(['theme', 'submission', 'teamMembers.user'])->orderBy('name')->get();
         $selectedTeam = $this->selectedTeamId ? $teams->firstWhere('id', $this->selectedTeamId) : null;
         $notes = $selectedTeam
             ? MentorNote::where('mentor_id', $mentorId)->where('team_id', $selectedTeam->id)->latest()->get()

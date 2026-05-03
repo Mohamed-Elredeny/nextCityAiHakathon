@@ -75,6 +75,9 @@ class ScoringService
                     throw new RuntimeException("Missing score for criterion: {$criterion}");
                 }
                 $value = max(0, min(10, (float) $scores[$criterion]));
+                if ($value <= 0) {
+                    throw new RuntimeException("Please rate every criterion (1–10) before locking. Missing: " . str_replace('_', ' ', $criterion) . '.');
+                }
                 $score->{$criterion} = $value;
             }
             $score->comment = $comment;

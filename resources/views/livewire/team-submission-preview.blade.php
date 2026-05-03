@@ -99,6 +99,90 @@
         </div>
     </header>
 
+    {{-- Team composition: which roles are filled / missing --}}
+    @php
+        $coverage = $team->role_coverage;
+        $membersByRole = $team->teamMembers->groupBy('role_category');
+        $missingCount = count($coverage['missing']);
+    @endphp
+    <section class="card-3d rounded-3xl p-6 lg:p-7 mb-6 lg:mb-8">
+        <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-aiu-red-50 text-aiu-red">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-2.13a4 4 0 11-8 0 4 4 0 018 0zm5-2a3 3 0 100-6 3 3 0 000 6zM6 11a3 3 0 100-6 3 3 0 000 6z"/></svg>
+                </span>
+                <div>
+                    <h2 class="font-heading text-xl font-bold text-aiu-ink-900">Team Composition</h2>
+                    <p class="text-xs text-aiu-ink-600">
+                        {{ count($coverage['filled']) }} of 3 core roles filled
+                        @if ($missingCount > 0)
+                            · <span class="text-aiu-red font-semibold">missing {{ $missingCount }}</span>
+                        @endif
+                    </p>
+                </div>
+            </div>
+            @if ($missingCount === 0)
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 text-[10px] uppercase tracking-wider font-bold">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Complete
+                </span>
+            @endif
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            @foreach (\App\Models\User::ROLE_CATEGORIES as $key => $label)
+                @php
+                    $people = $membersByRole->get($key, collect());
+                    $filled = $people->isNotEmpty();
+                @endphp
+                <div class="relative rounded-2xl p-4 ring-1 transition
+                            {{ $filled
+                                ? 'bg-white ring-aiu-line'
+                                : 'bg-aiu-red-50/40 ring-aiu-red/20 ring-dashed' }}">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <p class="font-heading text-sm font-bold {{ $filled ? 'text-aiu-ink-900' : 'text-aiu-red' }}">
+                            {{ $label }}
+                        </p>
+                        @if ($filled)
+                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            </span>
+                        @else
+                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-aiu-red ring-1 ring-aiu-red/30">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                            </span>
+                        @endif
+                    </div>
+
+                    @if ($filled)
+                        <div class="space-y-1.5">
+                            @foreach ($people as $tm)
+                                @if ($tm->user)
+                                    <a href="{{ route('users.show', $tm->user->id) }}"
+                                       class="flex items-center gap-2 group">
+                                        <x-avatar :user="$tm->user" size="xs" :leader="$tm->is_leader" />
+                                        <span class="text-xs text-aiu-ink-700 group-hover:text-aiu-red truncate">{{ $tm->user->name }}</span>
+                                    </a>
+                                @endif
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-xs text-aiu-red/80 italic leading-snug">
+                            No {{ strtolower($label) }} on this team yet.
+                        </p>
+                        @if ($team->is_recruiting)
+                            <a href="{{ route('community.teams') }}"
+                               class="inline-flex items-center gap-1 mt-2 text-[11px] font-semibold text-aiu-red hover:underline">
+                                Apply to fill this role
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        @endif
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </section>
+
     {{-- Round tabs (only show if at least one submission exists) --}}
     @if ($submissionsByRound->isNotEmpty())
         <section class="card-3d rounded-3xl p-2 mb-4">

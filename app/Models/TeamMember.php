@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TeamMember extends Model
 {
-    protected $fillable = ['team_id', 'user_id', 'role_in_team', 'is_leader'];
+    protected $fillable = ['team_id', 'user_id', 'role_in_team', 'role_category', 'is_leader'];
 
     protected $casts = [
         'is_leader' => 'boolean',

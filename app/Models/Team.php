@@ -11,18 +11,31 @@ use Illuminate\Support\Str;
 
 class Team extends Model
 {
+    public const MAX_MEMBERS = 5;
+
     protected $fillable = [
         'edition_id', 'theme_id', 'leader_id', 'name', 'slug',
         'tagline', 'logo_path', 'banner_path',
         'status', 'is_finalist', 'all_first_timers',
-        'is_recruiting', 'recruitment_message', 'looking_for_skills',
+        'is_recruiting', 'recruitment_message', 'looking_for_skills', 'needed_roles',
     ];
 
     protected $casts = [
         'is_finalist' => 'boolean',
         'all_first_timers' => 'boolean',
         'is_recruiting' => 'boolean',
+        'needed_roles' => 'array',
     ];
+
+    public function getRoleCoverageAttribute(): array
+    {
+        $required = array_keys(\App\Models\User::ROLE_CATEGORIES);
+        $filled = $this->teamMembers->pluck('role_category')->filter()->unique()->values()->all();
+        return [
+            'filled' => $filled,
+            'missing' => array_values(array_diff($required, $filled)),
+        ];
+    }
 
     public function getLogoUrlAttribute(): ?string
     {
@@ -61,7 +74,7 @@ class Team extends Model
     public function members(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'team_members')
-            ->withPivot(['role_in_team', 'is_leader'])
+            ->withPivot(['role_in_team', 'role_category', 'is_leader'])
             ->withTimestamps();
     }
 

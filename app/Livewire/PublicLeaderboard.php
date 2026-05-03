@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Edition;
+use App\Models\JudgeAssignment;
 use App\Models\PeoplesChoiceVote;
 use App\Models\Phase;
 use App\Models\PitchSchedule;
@@ -60,10 +61,19 @@ class PublicLeaderboard extends Component
         $nowPitching = $edition ? $this->nowPitching() : null;
         $nextDeadline = $currentPhase?->ends_at;
 
+        $recusedJudgeIds = JudgeAssignment::query()
+            ->whereIn('team_id', $teams->pluck('id'))
+            ->where('round', $this->round)
+            ->where('recused', true)
+            ->pluck('judge_id')
+            ->unique()
+            ->values();
+
         $allScores = Score::query()
             ->whereIn('team_id', $teams->pluck('id'))
             ->where('round', $this->round)
             ->whereNotNull('locked_at')
+            ->when($recusedJudgeIds->isNotEmpty(), fn ($q) => $q->whereNotIn('judge_id', $recusedJudgeIds))
             ->with('judge:id,name,institution')
             ->get();
 
@@ -104,15 +114,25 @@ class PublicLeaderboard extends Component
             ->where('edition_id', $edition->id)
             ->where('status', 'active')
             ->when($this->round === 'finals', fn ($q) => $q->where('is_finalist', true))
-            ->with(['theme'])
+            ->with(['theme', 'teamMembers'])
             ->get();
 
         $teamIds = $teams->pluck('id');
+
+        // Exclude scores from judges who were later recused for this round.
+        $recusedJudgeIds = JudgeAssignment::query()
+            ->whereIn('team_id', $teamIds)
+            ->where('round', $this->round)
+            ->where('recused', true)
+            ->pluck('judge_id', 'team_id');
 
         $aggregates = Score::query()
             ->whereIn('team_id', $teamIds)
             ->where('round', $this->round)
             ->whereNotNull('locked_at')
+            ->when($recusedJudgeIds->isNotEmpty(), function ($q) use ($recusedJudgeIds) {
+                $q->whereNotIn('judge_id', $recusedJudgeIds->values()->unique()->all());
+            })
             ->selectRaw('team_id, AVG(weighted_total) as avg_total, COUNT(*) as judge_count')
             ->groupBy('team_id')
             ->get()

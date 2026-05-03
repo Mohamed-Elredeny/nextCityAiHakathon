@@ -847,6 +847,9 @@
                                 <div class="w-12 h-6 bg-aiu-ink-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow peer-checked:bg-aiu-red"></div>
                             </label>
                         </div>
+                        @error('isRecruiting')
+                            <div class="mb-3 px-3 py-2 rounded-lg bg-aiu-red-50 text-aiu-red ring-1 ring-aiu-red/20 text-xs">{{ $message }}</div>
+                        @enderror
 
                         <div class="space-y-3">
                             <div>
@@ -885,39 +888,111 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @foreach ($team->members as $m)
-                            <a href="{{ route('users.show', $m->id) }}" target="_blank"
-                               class="surface-soft rounded-xl p-3 flex items-center gap-3 hover:ring-1 hover:ring-aiu-red/30 transition">
-                                <x-avatar :user="$m" size="md" :leader="$m->id === $team->leader_id" />
-                                <div class="min-w-0">
-                                    <p class="font-semibold text-sm text-aiu-ink-900 truncate">
-                                        {{ $m->name }}
-                                        @if ($m->id === $team->leader_id)
-                                            <span class="text-aiu-red text-xs">★ Leader</span>
-                                        @endif
-                                    </p>
+                            @php $isMe = $m->id === auth()->id(); $isTeamLeader = $m->id === $team->leader_id; @endphp
+                            <div class="surface-soft rounded-xl p-3 flex items-center gap-3 hover:ring-1 hover:ring-aiu-red/30 transition">
+                                <a href="{{ route('users.show', $m->id) }}" target="_blank" class="shrink-0">
+                                    <x-avatar :user="$m" size="md" :leader="$isTeamLeader" />
+                                </a>
+                                <div class="min-w-0 flex-1">
+                                    <a href="{{ route('users.show', $m->id) }}" target="_blank" class="block">
+                                        <p class="font-semibold text-sm text-aiu-ink-900 truncate hover:text-aiu-red transition">
+                                            {{ $m->name }}
+                                            @if ($isTeamLeader)
+                                                <span class="text-aiu-red text-xs">★ Leader</span>
+                                            @endif
+                                            @if ($isMe)
+                                                <span class="text-aiu-ink-400 text-[10px]">(you)</span>
+                                            @endif
+                                        </p>
+                                    </a>
                                     @if ($m->pivot->role_in_team)
                                         <p class="text-xs text-aiu-ink-600 truncate">{{ $m->pivot->role_in_team }}</p>
                                     @endif
+                                    <p class="text-[10px] text-aiu-ink-400 mt-0.5">Joined {{ \Carbon\Carbon::parse($m->pivot->created_at)->diffForHumans() }}</p>
                                 </div>
-                            </a>
+                                @if ($isLeader && !$isTeamLeader)
+                                    <div class="shrink-0 relative" x-data="{ open: false }">
+                                        <button type="button" @click="open = !open"
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-aiu-ink-400 hover:text-aiu-red hover:bg-aiu-red-50 transition">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"/></svg>
+                                        </button>
+                                        <div x-show="open" @click.outside="open = false" x-transition.opacity
+                                             class="absolute right-0 top-9 z-20 rounded-xl p-1.5 min-w-[200px] bg-white shadow-xl ring-1 ring-aiu-line" style="display: none">
+                                            <button type="button"
+                                                    wire:click="transferLeadership({{ $m->id }})"
+                                                    wire:confirm="Make {{ $m->name }} the new team leader? You will become a regular member."
+                                                    @click="open = false"
+                                                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-aiu-ink-700 hover:bg-aiu-gold-50 hover:text-aiu-gold-700 transition text-left">
+                                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.446a1 1 0 00-.364 1.118l1.287 3.957c.3.922-.755 1.688-1.54 1.118l-3.366-2.445a1 1 0 00-1.176 0l-3.367 2.445c-.784.57-1.838-.196-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.05 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z"/></svg>
+                                                Make team leader
+                                            </button>
+                                            <button type="button"
+                                                    wire:click="kickMember({{ $m->id }})"
+                                                    wire:confirm="Remove {{ $m->name }} from the team? This cannot be undone."
+                                                    @click="open = false"
+                                                    class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-aiu-red hover:bg-aiu-red-50 transition text-left">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22"/></svg>
+                                                Remove from team
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
                         @endforeach
                     </div>
+
+                    @unless ($isLeader)
+                        <div class="mt-5 pt-5 border-t border-aiu-line flex items-center justify-between gap-3">
+                            <p class="text-xs text-aiu-ink-500">Want to step away from this team? You can rejoin or apply to another later.</p>
+                            <button type="button"
+                                    wire:click="leaveTeam"
+                                    wire:confirm="Leave {{ $team->name }}? You'll be removed from the team and can apply to others."
+                                    class="btn-soft px-4 py-2 rounded-lg text-xs font-bold text-aiu-red hover:bg-aiu-red-50 ring-1 ring-aiu-red/20 inline-flex items-center gap-1.5 shrink-0">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                Leave team
+                            </button>
+                        </div>
+                    @endunless
+
+                    @if ($isLeader && $team->members->count() === 1)
+                        <div class="mt-5 pt-5 border-t border-aiu-red/20 flex items-center justify-between gap-3 bg-aiu-red-50/40 -mx-6 -mb-6 lg:-mx-7 lg:-mb-7 px-6 py-4 lg:px-7 rounded-b-3xl">
+                            <div>
+                                <p class="font-semibold text-sm text-aiu-red">Disband this team</p>
+                                <p class="text-xs text-aiu-ink-600 mt-0.5">You're the only member. Disbanding withdraws the team and rejects any pending applications.</p>
+                            </div>
+                            <button type="button"
+                                    wire:click="disbandTeam"
+                                    wire:confirm="Disband {{ $team->name }}? This withdraws the team from the hackathon. You can register a new team after."
+                                    class="btn-soft px-4 py-2 rounded-lg text-xs font-bold text-aiu-red ring-1 ring-aiu-red/30 bg-white hover:bg-aiu-red hover:text-white inline-flex items-center gap-1.5 shrink-0 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22"/></svg>
+                                Disband team
+                            </button>
+                        </div>
+                    @endif
                 </section>
 
-                {{-- Pending applications (leader only) --}}
-                @if ($isLeader)
-                    <section class="card-3d rounded-3xl p-6 lg:p-7">
-                        <div class="flex items-center justify-between mb-4">
-                            <div>
-                                <p class="text-[10px] uppercase tracking-[0.22em] text-aiu-ink-400 font-bold">Inbox</p>
-                                <h2 class="font-heading text-xl font-bold text-aiu-ink-900 mt-0.5">
-                                    Pending applications
-                                    @if ($pendingApplications->isNotEmpty())
-                                        <span class="ml-2 inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 rounded-full bg-aiu-red text-white text-xs">{{ $pendingApplications->count() }}</span>
-                                    @endif
-                                </h2>
-                            </div>
+                {{-- Pending applications (visible to all members, decisions leader-only) --}}
+                <section class="card-3d rounded-3xl p-6 lg:p-7">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-[10px] uppercase tracking-[0.22em] text-aiu-ink-400 font-bold">Inbox</p>
+                            <h2 class="font-heading text-xl font-bold text-aiu-ink-900 mt-0.5">
+                                Pending applications
+                                @if ($pendingApplications->isNotEmpty())
+                                    <span class="ml-2 inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 rounded-full bg-aiu-red text-white text-xs">{{ $pendingApplications->count() }}</span>
+                                @endif
+                            </h2>
+                            @unless ($isLeader)
+                                <p class="text-xs text-aiu-ink-500 mt-1">All members can see applicants. Only the team leader can accept or reject.</p>
+                            @endunless
                         </div>
+                    </div>
+
+                    @if ($applicationError)
+                        <div class="mb-4 px-4 py-2 rounded-lg bg-aiu-red-50 text-aiu-red ring-1 ring-aiu-red/20 text-sm">
+                            {{ $applicationError }}
+                        </div>
+                    @endif
 
                         @if ($pendingApplications->isEmpty())
                             <div class="surface-soft rounded-xl p-6 text-center text-sm text-aiu-ink-500">
@@ -952,25 +1027,29 @@
                                                 @endif
                                                 <p class="mt-2 text-sm text-aiu-ink-700 leading-relaxed whitespace-pre-line">{{ $app->message }}</p>
 
-                                                <div class="mt-3">
-                                                    <label class="block text-[11px] font-semibold text-aiu-ink-700 mb-1">Optional response message</label>
-                                                    <input type="text" wire:model="applicationResponses.{{ $app->id }}" maxlength="500"
-                                                           placeholder="Add a short note (sent to the applicant)"
-                                                           class="input-3d w-full px-3 py-2 rounded-lg text-xs">
-                                                </div>
+                                                @if ($isLeader)
+                                                    <div class="mt-3">
+                                                        <label class="block text-[11px] font-semibold text-aiu-ink-700 mb-1">Optional response message</label>
+                                                        <input type="text" wire:model="applicationResponses.{{ $app->id }}" maxlength="500"
+                                                               placeholder="Add a short note (sent to the applicant)"
+                                                               class="input-3d w-full px-3 py-2 rounded-lg text-xs">
+                                                    </div>
 
-                                                <div class="mt-3 flex items-center justify-end gap-2">
-                                                    <button wire:click="rejectApplication({{ $app->id }})"
-                                                            wire:confirm="Reject this application?"
-                                                            class="btn-soft px-3 py-1.5 rounded-lg text-xs font-semibold">
-                                                        Reject
-                                                    </button>
-                                                    <button wire:click="approveApplication({{ $app->id }})"
-                                                            wire:confirm="Approve this applicant and add them to your team?"
-                                                            class="btn-aiu px-4 py-1.5 rounded-lg text-xs font-semibold">
-                                                        Approve & add
-                                                    </button>
-                                                </div>
+                                                    <div class="mt-3 flex items-center justify-end gap-2">
+                                                        <button wire:click="rejectApplication({{ $app->id }})"
+                                                                wire:confirm="Reject this application?"
+                                                                class="btn-soft px-3 py-1.5 rounded-lg text-xs font-semibold">
+                                                            Reject
+                                                        </button>
+                                                        <button wire:click="approveApplication({{ $app->id }})"
+                                                                wire:confirm="Approve this applicant and add them to your team?"
+                                                                class="btn-aiu px-4 py-1.5 rounded-lg text-xs font-semibold">
+                                                            Approve & add
+                                                        </button>
+                                                    </div>
+                                                @else
+                                                    <p class="mt-3 text-[11px] text-aiu-ink-400 italic">Waiting on team leader's decision.</p>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -997,7 +1076,6 @@
                             </div>
                         @endif
                     </section>
-                @endif
             </div>
         @endif
     @endif

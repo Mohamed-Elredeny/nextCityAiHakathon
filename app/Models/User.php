@@ -14,6 +14,12 @@ class User extends Authenticatable implements FilamentUser
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
 
+    public const ROLE_CATEGORIES = [
+        'designer' => 'Designer',
+        'developer' => 'Developer',
+        'business' => 'Business',
+    ];
+
     protected $fillable = [
         'name',
         'email',
@@ -24,6 +30,7 @@ class User extends Authenticatable implements FilamentUser
         'bio',
         'avatar_path',
         'headline',
+        'primary_role',
         'social_links',
     ];
 
@@ -67,7 +74,7 @@ class User extends Authenticatable implements FilamentUser
     public function team()
     {
         return $this->belongsToMany(\App\Models\Team::class, 'team_members')
-            ->withPivot(['role_in_team', 'is_leader'])
+            ->withPivot(['role_in_team', 'role_category', 'is_leader'])
             ->withTimestamps();
     }
 

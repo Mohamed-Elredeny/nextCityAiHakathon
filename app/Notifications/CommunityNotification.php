@@ -20,6 +20,7 @@ class CommunityNotification extends Notification
     public const TYPE_APPLICATION_RECEIVED = 'application_received';
     public const TYPE_APPLICATION_APPROVED = 'application_approved';
     public const TYPE_APPLICATION_REJECTED = 'application_rejected';
+    public const TYPE_APPLICATION_WITHDRAWN = 'application_withdrawn';
 
     public function __construct(public array $payload)
     {
