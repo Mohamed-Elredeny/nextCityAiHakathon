@@ -13,6 +13,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class UserResource extends Resource
 {
@@ -172,24 +174,43 @@ class UserResource extends Resource
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (User $record) => $record->registration_status === 'pending')
+                    ->visible(fn (?User $record) => $record && $record->registration_status === 'pending')
                     ->requiresConfirmation()
-                    ->modalDescription(fn (User $record) => 'Approve ' . $record->name . ' as ' . ($record->requested_role ?? 'participant') . '?')
-                    ->action(function (User $record) {
-                        static::approveUser($record);
-                        Notification::make()
-                            ->title('Approved')
-                            ->body($record->name . ' can now sign in as ' . ($record->requested_role ?? 'participant') . '.')
-                            ->success()
-                            ->send();
+                    ->modalDescription(fn (?User $record) => $record
+                        ? 'Approve ' . $record->name . ' as ' . ($record->requested_role ?? 'participant') . '?'
+                        : null)
+                    ->action(function (?User $record) {
+                        if (! $record) {
+                            Notification::make()->title('User not found')->danger()->send();
+                            return;
+                        }
+                        try {
+                            static::approveUser($record);
+                            Notification::make()
+                                ->title('Approved')
+                                ->body($record->name . ' can now sign in as ' . ($record->requested_role ?? 'participant') . '.')
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            \Log::error('Approve user failed', ['user_id' => $record->id, 'err' => $e->getMessage()]);
+                            Notification::make()
+                                ->title('Approval failed')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->persistent()
+                                ->send();
+                        }
                     }),
                 Tables\Actions\Action::make('reject')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (User $record) => $record->registration_status === 'pending')
+                    ->visible(fn (?User $record) => $record && $record->registration_status === 'pending')
                     ->requiresConfirmation()
-                    ->action(function (User $record) {
+                    ->action(function (?User $record) {
+                        if (! $record) {
+                            return;
+                        }
                         $record->update([
                             'registration_status' => 'rejected',
                             'approved_at' => null,
@@ -231,23 +252,38 @@ class UserResource extends Resource
 
     /**
      * Mark the user approved and grant the role they originally requested.
+     * Re-fetches the user fresh to avoid stale-relationship bugs Filament can
+     * hit when dispatching table actions, and guarantees the target role
+     * exists before sync.
      */
     protected static function approveUser(User $user): void
     {
-        $role = match ($user->requested_role) {
+        $fresh = User::find($user->getKey());
+        if (! $fresh) {
+            return;
+        }
+
+        $roleName = match ($fresh->requested_role) {
             'mentor' => 'mentor',
             'judge'  => 'judge',
             default  => 'team_member',
         };
 
-        $user->update([
+        // Make sure the target role row exists in the spatie tables — on a
+        // clean prod DB it might not have been seeded yet, which causes
+        // sync/attach to crash with "newQueryWithoutRelationships() on null".
+        Role::findOrCreate($roleName, 'web');
+
+        // Bust the spatie permission cache so the role lookup doesn't return
+        // a stale list missing the role we just guaranteed.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $fresh->update([
             'registration_status' => 'approved',
             'approved_at' => now(),
         ]);
 
-        if (! $user->hasRole($role)) {
-            $user->syncRoles([$role]);
-        }
+        $fresh->syncRoles([$roleName]);
     }
 
     public static function getEloquentQuery(): Builder
