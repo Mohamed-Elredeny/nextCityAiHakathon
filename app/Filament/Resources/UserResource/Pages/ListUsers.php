@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -21,16 +22,18 @@ class ListUsers extends ListRecords
 
     public function getTabs(): array
     {
+        $pendingCount = User::where('registration_status', 'pending')->count();
+
         return [
             'all' => Tab::make('All'),
             'pending' => Tab::make('Pending review')
-                ->badge(\App\Models\User::where('registration_status', 'pending')->count())
+                ->badge($pendingCount > 0 ? (string) $pendingCount : null)
                 ->badgeColor('warning')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('registration_status', 'pending')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('registration_status', 'pending')),
             'approved' => Tab::make('Approved')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('registration_status', 'approved')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('registration_status', 'approved')),
             'rejected' => Tab::make('Rejected')
-                ->modifyQueryUsing(fn (Builder $q) => $q->where('registration_status', 'rejected')),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('registration_status', 'rejected')),
         ];
     }
 }

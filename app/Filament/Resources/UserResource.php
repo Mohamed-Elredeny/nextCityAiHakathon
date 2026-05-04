@@ -10,7 +10,6 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -91,11 +90,21 @@ class UserResource extends Resource
                         ->label('Self-requested role')
                         ->disabled()
                         ->dehydrated(false),
+                    // Use plain options (not ->relationship) to avoid Filament
+                    // eagerly invoking the Spatie morphToMany on a null parent
+                    // during table re-renders, which crashes with
+                    // "Call to a member function newQueryWithoutRelationships() on null".
                     Forms\Components\Select::make('roles')
                         ->label('Roles')
                         ->multiple()
-                        ->relationship('roles', 'name')
-                        ->preload()
+                        ->options(fn () => Role::query()->orderBy('name')->pluck('name', 'name')->all())
+                        ->afterStateHydrated(function (Forms\Components\Select $component, ?User $record) {
+                            $component->state($record ? $record->roles->pluck('name')->all() : []);
+                        })
+                        ->dehydrated(false)
+                        ->saveRelationshipsUsing(function (User $record, $state) {
+                            $record->syncRoles($state ?? []);
+                        })
                         ->columnSpanFull()
                         ->helperText('Mentor / judge applicants only get the role assigned once you approve them.'),
                     Forms\Components\TextInput::make('password')
@@ -125,7 +134,7 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('registration_status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'approved' => 'success',
                         'pending'  => 'warning',
                         'rejected' => 'danger',
@@ -135,17 +144,22 @@ class UserResource extends Resource
                     ->label('Requested')
                     ->badge()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('roles.name')
+                // Render roles directly off the loaded model rather than via a
+                // relationship dot-path column (which forces Filament to do
+                // additional joins that have been observed to fail in this
+                // app's deployment).
+                Tables\Columns\TextColumn::make('roles_list')
                     ->label('Roles')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->state(fn (User $record) => $record->roles->pluck('name')->all())
+                    ->color(fn (?string $state): string => match ($state) {
                         'super_admin' => 'danger',
-                        'judge' => 'info',
-                        'mentor' => 'success',
+                        'judge'       => 'info',
+                        'mentor'      => 'success',
                         'team_leader' => 'primary',
                         'team_member' => 'gray',
-                        'voter' => 'gray',
-                        default => 'gray',
+                        'voter'       => 'gray',
+                        default       => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('institution')
                     ->toggleable(),
@@ -164,10 +178,15 @@ class UserResource extends Resource
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
                     ]),
-                Tables\Filters\SelectFilter::make('roles')
-                    ->relationship('roles', 'name')
-                    ->multiple()
-                    ->preload(),
+                Tables\Filters\SelectFilter::make('role')
+                    ->label('Role')
+                    ->options(fn () => Role::query()->orderBy('name')->pluck('name', 'name')->all())
+                    ->query(function ($query, array $data) {
+                        if (! filled($data['value'] ?? null)) {
+                            return $query;
+                        }
+                        return $query->whereHas('roles', fn ($q) => $q->where('name', $data['value']));
+                    }),
             ])
             ->actions([
                 Tables\Actions\Action::make('approve')
@@ -252,9 +271,6 @@ class UserResource extends Resource
 
     /**
      * Mark the user approved and grant the role they originally requested.
-     * Re-fetches the user fresh to avoid stale-relationship bugs Filament can
-     * hit when dispatching table actions, and guarantees the target role
-     * exists before sync.
      */
     protected static function approveUser(User $user): void
     {
@@ -269,13 +285,7 @@ class UserResource extends Resource
             default  => 'team_member',
         };
 
-        // Make sure the target role row exists in the spatie tables — on a
-        // clean prod DB it might not have been seeded yet, which causes
-        // sync/attach to crash with "newQueryWithoutRelationships() on null".
         Role::findOrCreate($roleName, 'web');
-
-        // Bust the spatie permission cache so the role lookup doesn't return
-        // a stale list missing the role we just guaranteed.
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $fresh->update([
@@ -284,11 +294,6 @@ class UserResource extends Resource
         ]);
 
         $fresh->syncRoles([$roleName]);
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery();
     }
 
     public static function getPages(): array
