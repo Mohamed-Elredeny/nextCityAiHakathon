@@ -1,0 +1,33 @@
+Parsed registrants: 123
+Teams:              26
+Unaffiliated:       80
+Skipped (no email & not team): 0
+Wrote -> database\data\teams.json
+
+Team roster:
+  - Lacoste (1): mahmoud.kamel.2023@aiu.edu.eg
+  - RVM (6): ahmed.yasser.2024@aiu.edu.eg, marawankhaled7777@gmail.com, muhammed.elsaid.2024@aiu.edu.eg, mohmamed.bekhit.2024@aiu.edu.eg, ahmed.said.2024@aiu.edu.eg, yasseen.abdulghany.2024@aiu.edu.eg
+  - Genesis (1): ahmedebrahem7111@gmail.com
+  - Synapse404 (1): omar.khamis.2025@aiu.edu.eg
+  - The survivers (2): youssef.waheed.2025@aiu.edu.eg, abdelrahman77mohammad@gmail.com
+  - Nomeda (1): abdallahbasemzain@outlook.com
+  - Rasid - رَاصِد (5): shrouqwaleed7@gmail.com, mahmoud.fathy.2024@aiu.edu.eg, youssef.nashed.2024@aiu.edu.eg, yassin.kamaleldeen.2024@aiu.edu.eg, gamal.hussien.2024@aiu.edu.eg
+  - Octelligence (2): nourwaled245@gmail.com, abdalla.lasheen.2023@aiu.edu.eg
+  - Hack Elite (1): m0.maher02006@gmail.com
+  - biomedical coders (3): jana.moustafa.2024@aiu.edu.eg, anas.mohamed.2025@aiu.edu.eg, jana.hazem.2024@aiu.edu.eg
+  - VisionX Team (1): omar.abdulkarim.2025@aiu.edu.eg
+  - FlowAxis (1): kfparody809@gmail.com
+  - HealthCode (3): hana.elanshassy2@gmail.com, ammar.ahmed.2024@aiu.edu.eg, hany.mohamad.2024@aiu.edu.eg
+  - PharmaChain AI (1): mostafaamr14@gmail.com
+  - Allmanda (1): mohamed.abdelwahab@aiu.edu.eg
+  - Shimaa Elsaied Ibrahim Muhammad (1): nourmaged208@gmail.com
+  - Nour Maged Ahmed (1): shaimaa.mohamed.2024@aiu.edu.eg
+  - Aqua guards (2): zeinab.osman.2025@aiu.edu.eg, mazen.abdelsalam.2024@aiu.edu.eg
+  - TABx (1): basmala.samir.2025@aiu.edu.eg
+  - AIriScan (1): yy4472285@gmail.com
+  - Health Hackers (1): nourhan.gamal.2026@aiu.edu.eg
+  - Loop (1): mohamed.alsariti.2023@aiu.edu.eg
+  - NextGen AI (1): abdalla.ebrahim.2025@aiu.edu.eg
+  - EcoMind AI (1): rowan.elsayed.2023@aiu.edu.eg
+  - VitalSync (1): rodaina.hassan.2024@aiu.edu.eg
+  - Aoun team (2): hamdy.hendawy.2024@aiu.edu.eg, mohamed.hady.dev@gmail.com

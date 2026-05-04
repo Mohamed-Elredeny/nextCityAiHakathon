@@ -322,14 +322,20 @@
 
                 {{-- Team identity (leader only) --}}
                 @if ($isLeader)
-                    <section class="card-3d rounded-3xl p-6 lg:p-7" wire:key="team-identity">
+                    <section class="card-3d rounded-3xl p-6 lg:p-7" wire:ignore.self>
                         <div class="flex items-start justify-between gap-4 mb-4">
                             <div>
                                 <p class="text-[10px] uppercase tracking-[0.22em] text-aiu-ink-400 font-bold">Team Identity</p>
                                 <h2 class="font-heading text-lg font-bold text-aiu-ink-900 mt-0.5">Logo, banner & tagline</h2>
                                 <p class="text-xs text-aiu-ink-600 mt-1">Shown on the public leaderboard and team page.</p>
                             </div>
-                            @if ($identitySaved)
+                            @if (session('asset_status'))
+                                <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 font-bold inline-flex items-center gap-1"
+                                      x-data x-init="setTimeout(() => $el.style.display = 'none', 3000)">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                    {{ session('asset_status') }}
+                                </span>
+                            @elseif ($identitySaved)
                                 <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 font-bold inline-flex items-center gap-1"
                                       x-data x-init="setTimeout(() => $el.style.display = 'none', 3000)">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -338,7 +344,8 @@
                             @endif
                         </div>
 
-                        <form wire:submit="saveTeamIdentity" class="space-y-4">
+                        {{-- Tagline saves through Livewire (no file upload) --}}
+                        <form wire:submit="saveTeamIdentity" class="space-y-4 mb-6">
                             <div>
                                 <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold mb-1.5">Tagline (one-liner)</label>
                                 <input type="text" wire:model="tagline" maxlength="160"
@@ -346,53 +353,76 @@
                                        class="input-3d w-full px-3 py-2.5 rounded-lg text-sm">
                                 @error('tagline') <p class="mt-1 text-xs text-aiu-red">{{ $message }}</p> @enderror
                             </div>
+                            <div class="flex justify-end">
+                                <button type="submit" class="btn-aiu px-5 py-2.5 rounded-xl text-sm font-bold">Save tagline</button>
+                            </div>
+                        </form>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold mb-1.5">Logo (square, ≤ 1MB)</label>
+                        {{--
+                            Logo & banner upload bypass Livewire entirely — they POST as
+                            traditional multipart forms to a controller. This dodges the
+                            Windows + `php artisan serve` quirk where a PHP startup
+                            Notice on the request leaks into Livewire's JSON response.
+                        --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-aiu-line">
+                            <div class="space-y-2">
+                                <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold">Logo (square, ≤ 1MB)</label>
+                                <form action="{{ route('workspace.logo.upload') }}" method="POST" enctype="multipart/form-data" class="space-y-2">
+                                    @csrf
                                     <div class="flex items-center gap-3">
-                                        @if ($newLogo)
-                                            <img src="{{ $newLogo->temporaryUrl() }}" class="w-14 h-14 rounded-xl object-cover ring-2 ring-aiu-red/20">
-                                        @elseif ($team->logo_path)
+                                        @if ($team->logo_path)
                                             <img src="{{ asset('storage/' . $team->logo_path) }}" class="w-14 h-14 rounded-xl object-cover ring-2 ring-aiu-line">
                                         @else
                                             <div class="w-14 h-14 rounded-xl bg-aiu-ink-100 text-aiu-ink-400 flex items-center justify-center text-xs">No logo</div>
                                         @endif
-                                        <label class="flex-1 cursor-pointer btn-soft px-3 py-2 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M16 8l-4-4m0 0L8 8m4-4v12"/></svg>
-                                            {{ $team->logo_path || $newLogo ? 'Replace logo' : 'Upload logo' }}
-                                            <input type="file" wire:model="newLogo" accept="image/*" class="hidden">
-                                        </label>
+                                        <input type="file" name="logo" accept="image/*" required
+                                               class="flex-1 text-xs file:mr-2 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-aiu-ink-100 file:text-aiu-ink-700 file:font-semibold file:cursor-pointer hover:file:bg-aiu-red hover:file:text-white">
                                     </div>
-                                    <div wire:loading wire:target="newLogo" class="text-[11px] text-aiu-gold-600 mt-1">Uploading…</div>
-                                    @error('newLogo') <p class="mt-1 text-xs text-aiu-red">{{ $message }}</p> @enderror
-                                </div>
+                                    @error('logo') <p class="text-xs text-aiu-red">{{ $message }}</p> @enderror
+                                    <div class="flex justify-end">
+                                        <button type="submit" class="btn-aiu px-3 py-1.5 rounded-lg text-xs font-semibold">
+                                            {{ $team->logo_path ? 'Replace logo' : 'Upload logo' }}
+                                        </button>
+                                    </div>
+                                </form>
+                                @if ($team->logo_path)
+                                    <form action="{{ route('workspace.logo.delete') }}" method="POST" class="text-right"
+                                          onsubmit="return confirm('Remove the team logo?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-[11px] text-aiu-ink-500 hover:text-aiu-red">Remove logo</button>
+                                    </form>
+                                @endif
+                            </div>
 
-                                <div>
-                                    <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold mb-1.5">Banner (wide, ≤ 3MB)</label>
+                            <div class="space-y-2">
+                                <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold">Banner (wide, ≤ 3MB)</label>
+                                <form action="{{ route('workspace.banner.upload') }}" method="POST" enctype="multipart/form-data" class="space-y-2">
+                                    @csrf
                                     <div class="flex items-center gap-3">
-                                        @if ($newBanner)
-                                            <img src="{{ $newBanner->temporaryUrl() }}" class="w-24 h-14 rounded-lg object-cover ring-2 ring-aiu-red/20">
-                                        @elseif ($team->banner_path)
+                                        @if ($team->banner_path)
                                             <img src="{{ asset('storage/' . $team->banner_path) }}" class="w-24 h-14 rounded-lg object-cover ring-2 ring-aiu-line">
                                         @else
                                             <div class="w-24 h-14 rounded-lg bg-aiu-ink-100 text-aiu-ink-400 flex items-center justify-center text-xs">No banner</div>
                                         @endif
-                                        <label class="flex-1 cursor-pointer btn-soft px-3 py-2 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M16 8l-4-4m0 0L8 8m4-4v12"/></svg>
-                                            {{ $team->banner_path || $newBanner ? 'Replace banner' : 'Upload banner' }}
-                                            <input type="file" wire:model="newBanner" accept="image/*" class="hidden">
-                                        </label>
+                                        <input type="file" name="banner" accept="image/*" required
+                                               class="flex-1 text-xs file:mr-2 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-aiu-ink-100 file:text-aiu-ink-700 file:font-semibold file:cursor-pointer hover:file:bg-aiu-red hover:file:text-white">
                                     </div>
-                                    <div wire:loading wire:target="newBanner" class="text-[11px] text-aiu-gold-600 mt-1">Uploading…</div>
-                                    @error('newBanner') <p class="mt-1 text-xs text-aiu-red">{{ $message }}</p> @enderror
-                                </div>
+                                    @error('banner') <p class="text-xs text-aiu-red">{{ $message }}</p> @enderror
+                                    <div class="flex justify-end">
+                                        <button type="submit" class="btn-aiu px-3 py-1.5 rounded-lg text-xs font-semibold">
+                                            {{ $team->banner_path ? 'Replace banner' : 'Upload banner' }}
+                                        </button>
+                                    </div>
+                                </form>
+                                @if ($team->banner_path)
+                                    <form action="{{ route('workspace.banner.delete') }}" method="POST" class="text-right"
+                                          onsubmit="return confirm('Remove the team banner?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-[11px] text-aiu-ink-500 hover:text-aiu-red">Remove banner</button>
+                                    </form>
+                                @endif
                             </div>
-
-                            <div class="flex justify-end">
-                                <button type="submit" class="btn-aiu px-5 py-2.5 rounded-xl text-sm font-bold">Save identity</button>
-                            </div>
-                        </form>
+                        </div>
                     </section>
                 @endif
 

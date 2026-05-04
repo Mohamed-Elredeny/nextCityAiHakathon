@@ -19,6 +19,16 @@ class ParticipantLogin extends Component
             'password' => 'required',
         ]);
 
+        // Block sign-in for accounts that are awaiting admin approval, before
+        // we ever consume a session, so they can't slip past the role gates.
+        $pending = \App\Models\User::where('email', $this->email)
+            ->where('registration_status', 'pending')
+            ->exists();
+        if ($pending) {
+            $this->addError('email', 'Your account is awaiting admin approval. You\'ll be notified once it\'s reviewed.');
+            return;
+        }
+
         if (!Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
             $this->addError('email', 'Invalid credentials. Please check your email and password.');
             return;

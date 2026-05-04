@@ -32,6 +32,9 @@ class User extends Authenticatable implements FilamentUser
         'headline',
         'primary_role',
         'social_links',
+        'registration_status',
+        'requested_role',
+        'approved_at',
     ];
 
     protected $hidden = [
@@ -43,9 +46,20 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'approved_at' => 'datetime',
             'password' => 'hashed',
             'social_links' => 'array',
         ];
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->registration_status === 'approved';
+    }
+
+    public function isPending(): bool
+    {
+        return $this->registration_status === 'pending';
     }
 
     public function getAvatarUrlAttribute(): ?string

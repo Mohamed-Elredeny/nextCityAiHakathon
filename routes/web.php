@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AvatarController;
+use App\Http\Controllers\TeamAssetController;
 use App\Livewire\BigScreen;
 use App\Livewire\CommunityHub;
 use App\Livewire\CommunityPostView;
@@ -7,6 +9,7 @@ use App\Livewire\JudgeDashboard;
 use App\Livewire\MentorDashboard;
 use App\Livewire\NotificationCenter;
 use App\Livewire\ParticipantLogin;
+use App\Livewire\ParticipantRegister;
 use App\Livewire\PeoplesChoiceVote;
 use App\Livewire\ProfileView;
 use App\Livewire\PublicLeaderboard;
@@ -43,6 +46,10 @@ Route::get('/login', ParticipantLogin::class)
     ->middleware('guest')
     ->name('login');
 
+Route::get('/register', ParticipantRegister::class)
+    ->middleware('guest')
+    ->name('register');
+
 Route::post('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();
@@ -60,4 +67,13 @@ Route::middleware(['auth'])->group(function () {
         ->name('mentor');
     Route::get('/profile', UserProfile::class)->name('profile');
     Route::get('/notifications', NotificationCenter::class)->name('notifications');
+
+    // Plain form POST uploads — bypass Livewire so we don't trip on PHP
+    // notices leaking into the JSON response.
+    Route::post('/workspace/logo',   [TeamAssetController::class, 'uploadLogo'])->name('workspace.logo.upload');
+    Route::delete('/workspace/logo', [TeamAssetController::class, 'deleteLogo'])->name('workspace.logo.delete');
+    Route::post('/workspace/banner', [TeamAssetController::class, 'uploadBanner'])->name('workspace.banner.upload');
+    Route::delete('/workspace/banner',[TeamAssetController::class, 'deleteBanner'])->name('workspace.banner.delete');
+    Route::post('/profile/avatar',   [AvatarController::class, 'upload'])->name('profile.avatar.upload');
+    Route::delete('/profile/avatar', [AvatarController::class, 'delete'])->name('profile.avatar.delete');
 });

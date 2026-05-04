@@ -16,36 +16,49 @@
         </div>
     @endif
 
+    {{-- Avatar upload — standalone section, OUTSIDE the Livewire form
+         (HTML doesn't allow nested forms, so this can't live inside the
+         wire:submit="save" form below). --}}
+    <section class="card-3d rounded-3xl p-6 lg:p-7 mb-6" wire:ignore>
+        <div class="flex flex-col sm:flex-row items-center gap-6">
+            <div class="shrink-0">
+                @if ($user?->avatar_path)
+                    <img src="{{ asset('storage/' . $user->avatar_path) }}" alt="{{ $user->name }}" class="w-28 h-28 rounded-full object-cover ring-4 ring-aiu-red/20">
+                @else
+                    <x-avatar :user="$user" size="2xl" class="ring-4 ring-aiu-red/20"/>
+                @endif
+            </div>
+            <div class="flex-1 w-full">
+                <h2 class="font-heading text-lg font-bold text-aiu-ink-900 mb-1">Profile photo</h2>
+                <p class="text-xs text-aiu-ink-600 mb-3">JPG/PNG, ≤ 2 MB.</p>
+                <form action="{{ route('profile.avatar.upload') }}" method="POST" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
+                    @csrf
+                    <input type="file" name="avatar" accept="image/*" required
+                           class="text-xs file:mr-2 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-aiu-ink-100 file:text-aiu-ink-700 file:font-semibold file:cursor-pointer hover:file:bg-aiu-red hover:file:text-white">
+                    <button type="submit" class="btn-aiu px-4 py-1.5 rounded-lg text-xs font-semibold">
+                        {{ $user?->avatar_path ? 'Replace photo' : 'Upload photo' }}
+                    </button>
+                </form>
+                @error('avatar') <p class="mt-2 text-xs text-aiu-red">{{ $message }}</p> @enderror
+                @if ($user?->avatar_path)
+                    <form action="{{ route('profile.avatar.delete') }}" method="POST" class="mt-2"
+                          onsubmit="return confirm('Remove your photo?')">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="text-[11px] text-aiu-ink-500 hover:text-aiu-red transition">Remove photo</button>
+                    </form>
+                @endif
+                @if (session('asset_status'))
+                    <p class="mt-2 text-xs text-emerald-600 font-semibold">{{ session('asset_status') }}</p>
+                @endif
+            </div>
+        </div>
+    </section>
+
     <form wire:submit="save" class="space-y-6">
-        {{-- Avatar + identity --}}
+        {{-- Identity (rest of the profile) --}}
         <section class="card-3d rounded-3xl p-6 lg:p-7">
             <h2 class="font-heading text-lg font-bold text-aiu-ink-900 mb-5">Identity</h2>
             <div class="flex flex-col sm:flex-row items-start gap-6">
-                <div class="text-center">
-                    <div class="relative inline-block">
-                        @if ($avatar)
-                            <img src="{{ $avatar->temporaryUrl() }}" alt="preview" class="w-28 h-28 rounded-full object-cover ring-4 ring-aiu-red/20">
-                        @elseif ($user?->avatar_path)
-                            <img src="{{ asset('storage/' . $user->avatar_path) }}" alt="{{ $user->name }}" class="w-28 h-28 rounded-full object-cover ring-4 ring-aiu-red/20">
-                        @else
-                            <x-avatar :user="$user" size="2xl" class="ring-4 ring-aiu-red/20"/>
-                        @endif
-                    </div>
-                    <div class="mt-3 flex flex-col gap-1.5">
-                        <label class="cursor-pointer btn-soft px-3 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5V19a2 2 0 002 2h14a2 2 0 002-2v-2.5M16 8l-4-4m0 0L8 8m4-4v12"/></svg>
-                            Upload photo
-                            <input type="file" wire:model="avatar" accept="image/*" class="hidden">
-                        </label>
-                        @if ($user?->avatar_path && !$avatar)
-                            <button type="button" wire:click="$set('removeAvatar', true)" wire:click="save"
-                                    class="text-[11px] text-aiu-ink-500 hover:text-aiu-red transition">Remove</button>
-                        @endif
-                    </div>
-                    <div wire:loading wire:target="avatar" class="text-[11px] text-aiu-gold-600 mt-1">Uploading…</div>
-                    @error('avatar') <p class="mt-1 text-xs text-aiu-red">{{ $message }}</p> @enderror
-                </div>
-
                 <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                     <div class="sm:col-span-2">
                         <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold mb-1.5">Full name</label>

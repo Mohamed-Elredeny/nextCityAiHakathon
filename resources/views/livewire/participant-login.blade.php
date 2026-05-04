@@ -30,6 +30,11 @@
             <button type="submit" class="btn-aiu w-full py-3 rounded-lg font-bold uppercase tracking-wider text-sm">
                 Sign in
             </button>
+
+            <p class="text-center text-xs text-aiu-ink-600">
+                New here?
+                <a href="{{ route('register') }}" class="text-aiu-red font-semibold hover:underline">Create an account</a>
+            </p>
         </form>
 
     </div>
