@@ -66,15 +66,43 @@ class MembersRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\AttachAction::make()
-                    ->preloadRecordSelect()
-                    ->recordSelectSearchColumns(['name', 'email'])
+                    ->label('Attach existing user')
+                    ->modalHeading('Attach a user to this team')
+                    ->recordSelectSearchColumns(['name', 'email', 'phone'])
                     ->form(fn (Tables\Actions\AttachAction $action): array => [
                         $action->getRecordSelect()
-                            ->getSearchResultsUsing(fn (string $search) => User::query()
-                                ->whereDoesntHave('teamMembership')
-                                ->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
-                                ->limit(20)
-                                ->pluck('name', 'id')),
+                            ->helperText('Search by name, email, or phone. Users already on another team are shown — selecting one will move them here.')
+                            ->getSearchResultsUsing(function (string $search) {
+                                $ownerId = $this->getOwnerRecord()->getKey();
+                                return User::query()
+                                    ->with(['teams' => fn ($q) => $q->select('teams.id', 'teams.name')])
+                                    ->where(fn ($q) => $q
+                                        ->where('name', 'like', "%{$search}%")
+                                        ->orWhere('email', 'like', "%{$search}%")
+                                        ->orWhere('phone', 'like', "%{$search}%"))
+                                    // Hide users already on THIS team — they're listed in the table.
+                                    ->whereDoesntHave('teams', fn ($q) => $q->where('teams.id', $ownerId))
+                                    ->limit(30)
+                                    ->get()
+                                    ->mapWithKeys(function (User $u) {
+                                        $current = $u->teams->first();
+                                        $suffix = $current
+                                            ? " · already on \"{$current->name}\" — will be moved"
+                                            : '';
+                                        $label = "{$u->name} · {$u->email}"
+                                            . ($u->phone ? " · {$u->phone}" : '')
+                                            . $suffix;
+                                        return [$u->id => $label];
+                                    });
+                            })
+                            ->getOptionLabelUsing(function ($value) {
+                                $u = User::with('teams')->find($value);
+                                if (! $u) return null;
+                                $current = $u->teams->first();
+                                return "{$u->name} · {$u->email}"
+                                    . ($u->phone ? " · {$u->phone}" : '')
+                                    . ($current ? " · on \"{$current->name}\"" : '');
+                            }),
                         Forms\Components\Select::make('role_category')
                             ->label('Role category')
                             ->options(User::ROLE_CATEGORIES)
@@ -82,6 +110,32 @@ class MembersRelationManager extends RelationManager
                         Forms\Components\TextInput::make('role_in_team')->label('Role title')->maxLength(120),
                         Forms\Components\Toggle::make('is_leader')->label('Set as leader'),
                     ])
+                    ->before(function (array $data, $livewire) {
+                        // If the picked user is currently on another team, detach them
+                        // first so the team_members unique constraint / business rule
+                        // (one team per user) holds. Clear the old team's leader_id
+                        // if they were leading it.
+                        $userId = $data['recordId'] ?? null;
+                        if (! $userId) return;
+
+                        $newTeam = $livewire->getOwnerRecord();
+                        $oldTeams = \App\Models\Team::whereHas('members', fn ($q) => $q->where('users.id', $userId))
+                            ->where('id', '!=', $newTeam->id)
+                            ->get();
+
+                        foreach ($oldTeams as $oldTeam) {
+                            $oldTeam->members()->detach($userId);
+                            if ((int) $oldTeam->leader_id === (int) $userId) {
+                                $oldTeam->update(['leader_id' => null]);
+                            }
+                            \App\Models\AuditLog::record('team.member_moved_by_admin', $oldTeam, [
+                                'user_id' => $userId,
+                                'from_team_id' => $oldTeam->id,
+                                'to_team_id' => $newTeam->id,
+                                'admin_id' => \Illuminate\Support\Facades\Auth::id(),
+                            ]);
+                        }
+                    })
                     ->after(function (array $data, $record, $livewire) {
                         if (!empty($data['is_leader'])) {
                             $livewire->getOwnerRecord()->update(['leader_id' => $record->id]);
