@@ -8,6 +8,7 @@ use App\Livewire\CommunityPostView;
 use App\Livewire\JudgeDashboard;
 use App\Livewire\MentorDashboard;
 use App\Livewire\NotificationCenter;
+use App\Livewire\ForgotPassword;
 use App\Livewire\ParticipantLogin;
 use App\Livewire\ParticipantRegister;
 use App\Livewire\PeoplesChoiceVote;
@@ -49,6 +50,10 @@ Route::get('/login', ParticipantLogin::class)
 Route::get('/register', ParticipantRegister::class)
     ->middleware('guest')
     ->name('register');
+
+Route::get('/forgot-password', ForgotPassword::class)
+    ->middleware('guest')
+    ->name('password.request');
 
 Route::post('/logout', function (Request $request) {
     Auth::logout();

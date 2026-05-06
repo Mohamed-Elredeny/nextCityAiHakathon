@@ -22,10 +22,15 @@
                 @error('password') <p class="mt-2 text-xs text-aiu-red">{{ $message }}</p> @enderror
             </div>
 
-            <label class="flex items-center gap-2 text-sm text-aiu-ink-700 cursor-pointer">
-                <input type="checkbox" wire:model="remember" class="w-4 h-4 rounded border-aiu-line text-aiu-red focus:ring-aiu-red">
-                Remember me on this device
-            </label>
+            <div class="flex items-center justify-between gap-4">
+                <label class="flex items-center gap-2 text-sm text-aiu-ink-700 cursor-pointer">
+                    <input type="checkbox" wire:model="remember" class="w-4 h-4 rounded border-aiu-line text-aiu-red focus:ring-aiu-red">
+                    Remember me on this device
+                </label>
+                <a href="{{ route('password.request') }}" class="text-xs text-aiu-red font-semibold hover:underline">
+                    Forgot password?
+                </a>
+            </div>
 
             <button type="submit" class="btn-aiu w-full py-3 rounded-lg font-bold uppercase tracking-wider text-sm">
                 Sign in
