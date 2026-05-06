@@ -275,6 +275,15 @@ class TeamWorkspace extends Component
     public function saveSubmissionDraft(): void
     {
         if (!$this->teamId) return;
+
+        $this->validate([
+            'reportPdf' => 'nullable|file|mimes:pdf|max:51200',
+            'slidesUrl' => 'nullable|url|max:500',
+            'repoUrl' => 'nullable|url|max:500',
+            'videoUrl' => 'nullable|url|max:500',
+            'aiDisclosure' => 'nullable|string|max:2000',
+        ]);
+
         $sub = Submission::firstOrNew([
             'team_id' => $this->teamId,
             'round' => $this->activeRound,
