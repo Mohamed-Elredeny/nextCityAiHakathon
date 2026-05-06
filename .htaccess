@@ -24,6 +24,10 @@ Options -Indexes -MultiViews
     Require all denied
 </FilesMatch>
 
-RedirectMatch 403 ^/hackathon/(app|bootstrap|config|database|resources|routes|storage|tests|vendor|nextCityAiHakathon)(/|$)
+# NOTE: do NOT block /hackathon/storage/ here — that URL resolves to
+# public/storage (the `php artisan storage:link` symlink) which legitimately
+# serves user uploads. The project's real storage/ dir is unreachable because
+# the vhost Alias maps /hackathon → public/ only.
+RedirectMatch 403 ^/hackathon/(app|bootstrap|config|database|resources|routes|tests|vendor|nextCityAiHakathon)(/|$)
 
 AddDefaultCharset UTF-8
