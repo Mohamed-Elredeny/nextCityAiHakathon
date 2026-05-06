@@ -91,7 +91,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->hasOne(\App\Models\TeamMember::class);
     }
 
-    public function team()
+    public function teams()
     {
         return $this->belongsToMany(\App\Models\Team::class, 'team_members')
             ->withPivot(['role_in_team', 'role_category', 'is_leader'])
@@ -100,7 +100,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
     public function currentTeam(): ?\App\Models\Team
     {
-        return $this->team()->first();
+        return $this->teams()->first();
     }
 
     public function ledTeams()

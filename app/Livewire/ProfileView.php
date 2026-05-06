@@ -18,10 +18,10 @@ class ProfileView extends Component
     #[Layout('components.layouts.public')]
     public function render()
     {
-        $user = User::with(['roles', 'team.theme', 'ledTeams.theme'])->find($this->userId);
+        $user = User::with(['roles', 'teams.theme', 'ledTeams.theme'])->find($this->userId);
         abort_if(!$user, 404);
 
-        $teams = $user->team()->with('theme')->get();
+        $teams = $user->teams()->with('theme')->get();
         $primaryRole = $user->roles->first()?->name;
 
         return view('livewire.profile-view', [
