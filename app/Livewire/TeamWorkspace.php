@@ -276,11 +276,14 @@ class TeamWorkspace extends Component
     {
         if (!$this->teamId) return;
 
+        // Drafts are intentionally permissive — teams iterate on partial,
+        // half-typed values throughout the hackathon. Strict URL/format
+        // validation runs in SubmissionService::submit() at lock-in time.
         $this->validate([
             'reportPdf' => 'nullable|file|mimes:pdf|max:51200',
-            'slidesUrl' => 'nullable|url|max:500',
-            'repoUrl' => 'nullable|url|max:500',
-            'videoUrl' => 'nullable|url|max:500',
+            'slidesUrl' => 'nullable|string|max:500',
+            'repoUrl' => 'nullable|string|max:500',
+            'videoUrl' => 'nullable|string|max:500',
             'aiDisclosure' => 'nullable|string|max:2000',
         ]);
 
