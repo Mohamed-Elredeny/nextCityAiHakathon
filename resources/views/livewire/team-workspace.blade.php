@@ -682,7 +682,7 @@
                             @endforeach
                         </div>
 
-                        <fieldset @if($isSubmitted || !$isLeader) disabled @endif class="space-y-5 {{ $isSubmitted ? 'opacity-60' : '' }}">
+                        <fieldset @if($isSubmitted) disabled @endif class="space-y-5 {{ $isSubmitted ? 'opacity-60' : '' }}">
                             <div>
                                 <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold mb-2">
                                     Solution Report (PDF, max 5 pages)
