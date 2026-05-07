@@ -108,7 +108,18 @@ class PitchScheduleResource extends Resource
                             ->body(count($ids) . ' team(s) marked as finalists.')
                             ->success()->send();
                     }),
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\Action::make('export_csv')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('gray')
+                    ->form([
+                        Forms\Components\Select::make('round')
+                            ->options(['' => 'All rounds', 'round1' => 'Round 1 only', 'finals' => 'Finals only'])
+                            ->default('round1'),
+                    ])
+                    ->action(function (array $data) {
+                        return self::streamCsv($data['round'] ?? '');
+                    }),
             ])
             ->actions([
                 Tables\Actions\Action::make('start')
@@ -123,8 +134,57 @@ class PitchScheduleResource extends Resource
                     ->action(fn ($record) => app(PitchScheduleService::class)->end($record)),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-            ])
-            ->defaultSort('slot_index');
+            ]);
+    }
+
+    /**
+     * Stream a UTF-8 CSV (with BOM so Excel reads Arabic correctly) of the
+     * pitch schedule, optionally filtered by round. Grouped by room then
+     * slot order so each room reads top-to-bottom.
+     */
+    public static function streamCsv(string $round = ''): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $query = PitchSchedule::query()->with('team:id,name,slug,tagline');
+        if ($round !== '') {
+            $query->where('round', $round);
+        }
+        $rows = $query
+            ->orderByRaw('COALESCE(room, "Z")')
+            ->orderBy('scheduled_start')
+            ->orderBy('slot_index')
+            ->get();
+
+        $filename = 'pitch-schedule-' . ($round ?: 'all') . '-' . now()->format('Ymd-His') . '.csv';
+
+        return response()->streamDownload(function () use ($rows) {
+            $out = fopen('php://output', 'w');
+            // BOM so Excel opens UTF-8 (Arabic) correctly
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, [
+                'Room', 'Slot #', 'Round', 'Team', 'Tagline',
+                'Scheduled start', 'Scheduled end (+10m)',
+                'Started at', 'Ended at', 'Status',
+            ]);
+            foreach ($rows as $r) {
+                $end = $r->scheduled_start ? $r->scheduled_start->copy()->addMinutes(10) : null;
+                $status = $r->ended_at ? 'completed' : ($r->started_at ? 'live' : 'pending');
+                fputcsv($out, [
+                    $r->room ? 'Room ' . $r->room : '',
+                    $r->slot_index,
+                    $r->round === 'finals' ? 'Finals' : 'Round 1',
+                    $r->team?->name ?? '',
+                    $r->team?->tagline ?? '',
+                    optional($r->scheduled_start)?->format('Y-m-d H:i'),
+                    optional($end)?->format('Y-m-d H:i'),
+                    optional($r->started_at)?->format('Y-m-d H:i:s'),
+                    optional($r->ended_at)?->format('Y-m-d H:i:s'),
+                    $status,
+                ]);
+            }
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     public static function getPages(): array
