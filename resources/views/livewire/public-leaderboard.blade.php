@@ -183,7 +183,7 @@
                     display: inline-flex;
                     align-items: center;
                     white-space: nowrap;
-                    animation: lb-marquee-scroll 120s linear infinite;
+                    animation: lb-marquee-scroll 200s linear infinite;
                     will-change: transform;
                 }
                 .lb-marquee:hover .lb-marquee__track { animation-play-state: paused; }
@@ -197,49 +197,49 @@
                 }
                 .lb-marquee__team:hover .lb-marquee__name { color: #C8102E; }
                 .lb-marquee__logo {
-                    width: 56px; height: 56px;
-                    border-radius: 12px;
+                    width: 76px; height: 76px;
+                    border-radius: 16px;
                     background: #fff;
-                    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+                    box-shadow: 0 2px 8px rgba(0,0,0,.10);
                     display: flex; align-items: center; justify-content: center;
-                    padding: 5px;
+                    padding: 7px;
                     flex-shrink: 0;
                 }
                 .lb-marquee__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
                 .lb-marquee__logo-initials {
                     font-family: 'Ubuntu', sans-serif;
                     font-weight: 700;
-                    font-size: 1.05rem;
+                    font-size: 1.35rem;
                     color: #C8102E;
                     letter-spacing: 0.05em;
                 }
-                .lb-marquee__meta { min-width: 0; max-width: 180px; }
+                .lb-marquee__meta { min-width: 0; max-width: 200px; }
                 .lb-marquee__name {
                     font-family: 'Ubuntu', sans-serif;
                     font-weight: 700;
-                    font-size: 0.95rem;
+                    font-size: 1.05rem;
                     color: #1a1a1a;
-                    line-height: 1.1;
+                    line-height: 1.15;
                     transition: color .15s;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
                 .lb-marquee__tag {
-                    font-size: 0.7rem;
+                    font-size: 0.75rem;
                     color: #6b7280;
-                    margin-top: 2px;
+                    margin-top: 3px;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
                 .lb-marquee__members { display: inline-flex; align-items: center; }
-                .lb-marquee__members > .lb-marquee__avatar + .lb-marquee__avatar { margin-left: -8px; }
+                .lb-marquee__members > .lb-marquee__avatar + .lb-marquee__avatar { margin-left: -12px; }
                 .lb-marquee__avatar {
-                    width: 38px; height: 38px;
+                    width: 64px; height: 64px;
                     border-radius: 9999px;
                     background: #e5e7eb;
-                    box-shadow: 0 0 0 2.5px #fff;
+                    box-shadow: 0 0 0 3px #fff, 0 2px 4px rgba(0,0,0,.08);
                     overflow: hidden;
                     display: inline-flex;
                     align-items: center;
@@ -250,14 +250,14 @@
                 .lb-marquee__avatar span {
                     font-family: 'Ubuntu', sans-serif;
                     font-weight: 700;
-                    font-size: 0.7rem;
+                    font-size: 0.95rem;
                     color: #6b7280;
                 }
                 .lb-marquee__sep {
                     width: 1px;
-                    height: 38px;
+                    height: 64px;
                     background: linear-gradient(180deg, transparent, #d1d5db, transparent);
-                    margin: 0 0.5rem;
+                    margin: 0 0.75rem;
                 }
                 @keyframes lb-marquee-scroll {
                     0%   { transform: translateX(0); }

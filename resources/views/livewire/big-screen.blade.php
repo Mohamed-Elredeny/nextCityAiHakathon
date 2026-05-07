@@ -149,7 +149,7 @@
                 align-items: center;
                 gap: 0;
                 white-space: nowrap;
-                animation: bs-marquee-scroll 120s linear infinite;
+                animation: bs-marquee-scroll 200s linear infinite;
                 will-change: transform;
             }
             .bs-marquee:hover .bs-marquee__track { animation-play-state: paused; }
@@ -161,12 +161,12 @@
                 flex-shrink: 0;
             }
             .bs-marquee__logo {
-                width: 64px; height: 64px;
-                border-radius: 14px;
+                width: 88px; height: 88px;
+                border-radius: 18px;
                 background: #fff;
-                box-shadow: 0 2px 6px rgba(0,0,0,.08);
+                box-shadow: 0 2px 8px rgba(0,0,0,.10);
                 display: flex; align-items: center; justify-content: center;
-                padding: 6px;
+                padding: 8px;
                 flex-shrink: 0;
             }
             .bs-marquee__logo img {
@@ -176,28 +176,28 @@
             .bs-marquee__logo-initials {
                 font-family: 'Ubuntu', sans-serif;
                 font-weight: 700;
-                font-size: 1.25rem;
+                font-size: 1.5rem;
                 color: #C8102E;
                 letter-spacing: 0.05em;
             }
             .bs-marquee__meta {
                 min-width: 0;
-                max-width: 200px;
+                max-width: 220px;
             }
             .bs-marquee__name {
                 font-family: 'Ubuntu', system-ui, sans-serif;
                 font-weight: 700;
-                font-size: 1rem;
+                font-size: 1.15rem;
                 color: #1a1a1a;
-                line-height: 1.1;
+                line-height: 1.15;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
             .bs-marquee__tag {
-                font-size: 0.7rem;
+                font-size: 0.78rem;
                 color: #6b7280;
-                margin-top: 2px;
+                margin-top: 3px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -207,13 +207,13 @@
                 align-items: center;
             }
             .bs-marquee__members > .bs-marquee__avatar + .bs-marquee__avatar {
-                margin-left: -10px;
+                margin-left: -14px;
             }
             .bs-marquee__avatar {
-                width: 44px; height: 44px;
+                width: 72px; height: 72px;
                 border-radius: 9999px;
                 background: #e5e7eb;
-                box-shadow: 0 0 0 3px #fff;
+                box-shadow: 0 0 0 3px #fff, 0 2px 4px rgba(0,0,0,.08);
                 overflow: hidden;
                 display: inline-flex;
                 align-items: center;
@@ -227,14 +227,14 @@
             .bs-marquee__avatar span {
                 font-family: 'Ubuntu', sans-serif;
                 font-weight: 700;
-                font-size: 0.75rem;
+                font-size: 1rem;
                 color: #6b7280;
             }
             .bs-marquee__sep {
                 width: 1px;
-                height: 44px;
+                height: 72px;
                 background: linear-gradient(180deg, transparent, #d1d5db, transparent);
-                margin: 0 0.5rem;
+                margin: 0 0.75rem;
             }
             @keyframes bs-marquee-scroll {
                 0%   { transform: translateX(0); }
