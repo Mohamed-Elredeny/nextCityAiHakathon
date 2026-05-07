@@ -110,7 +110,13 @@
                     @foreach ($ribbon as $team)
                         <div class="bs-marquee__team">
                             <div class="bs-marquee__logo">
-                                <img src="{{ $team->logo_url }}" alt="{{ $team->name }}" loading="lazy">
+                                @if ($team->logo_path)
+                                    <img src="{{ $team->logo_url }}" alt="{{ $team->name }}" loading="lazy">
+                                @else
+                                    <span class="bs-marquee__logo-initials">
+                                        {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($team->name, 0, 2)) }}
+                                    </span>
+                                @endif
                             </div>
                             <div class="bs-marquee__meta">
                                 <p class="bs-marquee__name">{{ $team->name }}</p>
@@ -143,7 +149,7 @@
                 align-items: center;
                 gap: 0;
                 white-space: nowrap;
-                animation: bs-marquee-scroll 60s linear infinite;
+                animation: bs-marquee-scroll 120s linear infinite;
                 will-change: transform;
             }
             .bs-marquee:hover .bs-marquee__track { animation-play-state: paused; }
@@ -166,6 +172,13 @@
             .bs-marquee__logo img {
                 max-width: 100%; max-height: 100%;
                 object-fit: contain;
+            }
+            .bs-marquee__logo-initials {
+                font-family: 'Ubuntu', sans-serif;
+                font-weight: 700;
+                font-size: 1.25rem;
+                color: #C8102E;
+                letter-spacing: 0.05em;
             }
             .bs-marquee__meta {
                 min-width: 0;

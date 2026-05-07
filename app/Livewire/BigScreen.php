@@ -46,12 +46,12 @@ class BigScreen extends Component
             ->orderByDesc('started_at')
             ->first();
 
-        // Showcase ribbon — every team in the active edition with their members.
+        // Showcase ribbon — every active team in the active edition with their
+        // members. Teams without a logo render an initials placeholder.
         $showcaseTeams = $edition
             ? Team::query()
                 ->where('edition_id', $edition->id)
                 ->where('status', 'active')
-                ->whereNotNull('logo_path')
                 ->with(['members' => fn ($q) => $q->orderBy('users.name')])
                 ->orderBy('name')
                 ->get()

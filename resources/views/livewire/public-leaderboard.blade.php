@@ -131,6 +131,141 @@
             })();
         </script>
 
+        @if (! empty($showcaseTeams) && $showcaseTeams->isNotEmpty())
+            @php $ribbon = $showcaseTeams->concat($showcaseTeams); @endphp
+            <section class="lb-marquee-wrap card-3d rounded-2xl mb-6 overflow-hidden">
+                <div class="flex items-center gap-3 px-6 pt-4">
+                    <span class="inline-block w-2 h-2 rounded-full bg-aiu-red animate-pulse"></span>
+                    <p class="text-[10px] uppercase tracking-[0.3em] text-aiu-red font-bold">Meet the Teams</p>
+                    <p class="text-[11px] text-aiu-ink-400">{{ $showcaseTeams->count() }} {{ \Illuminate\Support\Str::plural('team', $showcaseTeams->count()) }}</p>
+                </div>
+                <div class="lb-marquee py-4">
+                    <div class="lb-marquee__track">
+                        @foreach ($ribbon as $team)
+                            <a href="{{ route('teams.show', $team->slug) }}" class="lb-marquee__team">
+                                <div class="lb-marquee__logo">
+                                    @if ($team->logo_path)
+                                        <img src="{{ $team->logo_url }}" alt="{{ $team->name }}" loading="lazy">
+                                    @else
+                                        <span class="lb-marquee__logo-initials">
+                                            {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($team->name, 0, 2)) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="lb-marquee__meta">
+                                    <p class="lb-marquee__name">{{ $team->name }}</p>
+                                    @if ($team->tagline)
+                                        <p class="lb-marquee__tag">{{ \Illuminate\Support\Str::limit($team->tagline, 60) }}</p>
+                                    @endif
+                                </div>
+                                <div class="lb-marquee__members">
+                                    @foreach ($team->members as $member)
+                                        <div class="lb-marquee__avatar" title="{{ $member->name }}">
+                                            @if ($member->avatar_path)
+                                                <img src="{{ $member->avatar_url }}" alt="{{ $member->name }}" loading="lazy">
+                                            @else
+                                                <span>{{ $member->initials }}</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="lb-marquee__sep"></div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+
+            <style>
+                .lb-marquee-wrap { background: linear-gradient(90deg, #fafafa, #fff, #fafafa); }
+                .lb-marquee { width: 100%; overflow: hidden; }
+                .lb-marquee__track {
+                    display: inline-flex;
+                    align-items: center;
+                    white-space: nowrap;
+                    animation: lb-marquee-scroll 120s linear infinite;
+                    will-change: transform;
+                }
+                .lb-marquee:hover .lb-marquee__track { animation-play-state: paused; }
+                .lb-marquee__team {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 1rem;
+                    padding: 0 0.75rem;
+                    flex-shrink: 0;
+                    text-decoration: none;
+                }
+                .lb-marquee__team:hover .lb-marquee__name { color: #C8102E; }
+                .lb-marquee__logo {
+                    width: 56px; height: 56px;
+                    border-radius: 12px;
+                    background: #fff;
+                    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+                    display: flex; align-items: center; justify-content: center;
+                    padding: 5px;
+                    flex-shrink: 0;
+                }
+                .lb-marquee__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+                .lb-marquee__logo-initials {
+                    font-family: 'Ubuntu', sans-serif;
+                    font-weight: 700;
+                    font-size: 1.05rem;
+                    color: #C8102E;
+                    letter-spacing: 0.05em;
+                }
+                .lb-marquee__meta { min-width: 0; max-width: 180px; }
+                .lb-marquee__name {
+                    font-family: 'Ubuntu', sans-serif;
+                    font-weight: 700;
+                    font-size: 0.95rem;
+                    color: #1a1a1a;
+                    line-height: 1.1;
+                    transition: color .15s;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .lb-marquee__tag {
+                    font-size: 0.7rem;
+                    color: #6b7280;
+                    margin-top: 2px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .lb-marquee__members { display: inline-flex; align-items: center; }
+                .lb-marquee__members > .lb-marquee__avatar + .lb-marquee__avatar { margin-left: -8px; }
+                .lb-marquee__avatar {
+                    width: 38px; height: 38px;
+                    border-radius: 9999px;
+                    background: #e5e7eb;
+                    box-shadow: 0 0 0 2.5px #fff;
+                    overflow: hidden;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                }
+                .lb-marquee__avatar img { width: 100%; height: 100%; object-fit: cover; }
+                .lb-marquee__avatar span {
+                    font-family: 'Ubuntu', sans-serif;
+                    font-weight: 700;
+                    font-size: 0.7rem;
+                    color: #6b7280;
+                }
+                .lb-marquee__sep {
+                    width: 1px;
+                    height: 38px;
+                    background: linear-gradient(180deg, transparent, #d1d5db, transparent);
+                    margin: 0 0.5rem;
+                }
+                @keyframes lb-marquee-scroll {
+                    0%   { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+            </style>
+        @endif
+
         <div x-ref="scoreboard"
              :class="fs ? 'fixed inset-0 z-[100] aiu-bg-soft overflow-y-auto p-6 lg:p-10' : ''">
 

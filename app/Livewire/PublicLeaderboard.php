@@ -86,6 +86,16 @@ class PublicLeaderboard extends Component
             $scoreLookup[$s->team_id][$s->judge_id] = $s;
         }
 
+        // Showcase ribbon — every active team in the edition with their members.
+        $showcaseTeams = $edition
+            ? Team::query()
+                ->where('edition_id', $edition->id)
+                ->where('status', 'active')
+                ->with(['members' => fn ($q) => $q->orderBy('users.name')])
+                ->orderBy('name')
+                ->get()
+            : collect();
+
         return view('livewire.public-leaderboard', [
             'teams' => $teams,
             'edition' => $edition,
@@ -95,6 +105,7 @@ class PublicLeaderboard extends Component
             'serverNow' => Carbon::now(),
             'judges' => $judges,
             'scoreLookup' => $scoreLookup,
+            'showcaseTeams' => $showcaseTeams,
             'criteria' => [
                 'innovation' => ['label' => 'Innovation', 'weight' => 0.20],
                 'technical'  => ['label' => 'Technical',  'weight' => 0.25],
