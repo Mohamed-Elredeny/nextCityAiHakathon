@@ -54,6 +54,32 @@ class Team extends Model
                 $team->slug = Str::slug($team->name) . '-' . Str::random(4);
             }
         });
+
+        // When a new team is created, auto-assign every board member and
+        // partner as a judge (round1 + finals) and as a mentor — they
+        // have full visibility on every team by design.
+        static::created(function (Team $team) {
+            $people = \App\Models\User::query()
+                ->whereIn('user_category', [
+                    \App\Models\User::CATEGORY_BOARD,
+                    \App\Models\User::CATEGORY_PARTNER,
+                ])
+                ->pluck('id');
+
+            foreach ($people as $personId) {
+                \App\Models\JudgeAssignment::firstOrCreate(
+                    ['judge_id' => $personId, 'team_id' => $team->id, 'round' => \App\Models\JudgeAssignment::ROUND_ONE],
+                    ['recused' => false],
+                );
+                \App\Models\JudgeAssignment::firstOrCreate(
+                    ['judge_id' => $personId, 'team_id' => $team->id, 'round' => \App\Models\JudgeAssignment::ROUND_FINALS],
+                    ['recused' => false],
+                );
+                \App\Models\MentorAssignment::firstOrCreate(
+                    ['mentor_id' => $personId, 'team_id' => $team->id],
+                );
+            }
+        });
     }
 
     public function edition(): BelongsTo

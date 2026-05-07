@@ -2,6 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Edition;
+use App\Models\JudgeAssignment;
+use App\Models\MentorAssignment;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -63,6 +67,70 @@ class BoardAndPartnersSeeder extends Seeder
         $this->command?->warn('Board & Partner accounts (share these credentials with the people only):');
         $this->command?->table(['Name', 'Email', 'Password', 'Category'], $credentials);
         $this->command?->newLine();
+
+        // Make sure every board member and partner is assigned as judge AND
+        // mentor to every team in the active edition. Idempotent — safe to
+        // re-run.
+        $assignmentSummary = $this->assignBoardAndPartnersToAllTeams();
+        $this->command?->info('Assigned board/partners to all teams: ' . json_encode($assignmentSummary));
+    }
+
+    /**
+     * Ensure every board member + partner has a JudgeAssignment (round1 +
+     * finals) and a MentorAssignment for every team in the active edition.
+     */
+    public function assignBoardAndPartnersToAllTeams(): array
+    {
+        $edition = Edition::active();
+        if (! $edition) {
+            $this->command?->warn('No active edition — skipping auto-assignment.');
+            return ['judges_added' => 0, 'mentors_added' => 0];
+        }
+
+        $teams = Team::where('edition_id', $edition->id)->where('status', 'active')->get();
+        if ($teams->isEmpty()) {
+            $this->command?->warn('No active teams in edition — skipping auto-assignment.');
+            return ['judges_added' => 0, 'mentors_added' => 0];
+        }
+
+        $people = User::query()
+            ->whereIn('user_category', [User::CATEGORY_BOARD, User::CATEGORY_PARTNER])
+            ->get();
+
+        $judgesAdded = 0;
+        $mentorsAdded = 0;
+
+        foreach ($people as $person) {
+            foreach ($teams as $team) {
+                // Round 1
+                $r1 = JudgeAssignment::firstOrCreate(
+                    ['judge_id' => $person->id, 'team_id' => $team->id, 'round' => JudgeAssignment::ROUND_ONE],
+                    ['recused' => false],
+                );
+                if ($r1->wasRecentlyCreated) $judgesAdded++;
+
+                // Finals (only meaningful if team becomes finalist later, but
+                // pre-creating is harmless and avoids manual work).
+                $rf = JudgeAssignment::firstOrCreate(
+                    ['judge_id' => $person->id, 'team_id' => $team->id, 'round' => JudgeAssignment::ROUND_FINALS],
+                    ['recused' => false],
+                );
+                if ($rf->wasRecentlyCreated) $judgesAdded++;
+
+                // Mentor assignment (no round)
+                $m = MentorAssignment::firstOrCreate(
+                    ['mentor_id' => $person->id, 'team_id' => $team->id],
+                );
+                if ($m->wasRecentlyCreated) $mentorsAdded++;
+            }
+        }
+
+        return [
+            'judges_added' => $judgesAdded,
+            'mentors_added' => $mentorsAdded,
+            'people' => $people->count(),
+            'teams' => $teams->count(),
+        ];
     }
 
     private function upsert(array $data): array

@@ -131,6 +131,45 @@
             })();
         </script>
 
+        @if (! empty($partners) && $partners->isNotEmpty())
+            <section class="card-3d rounded-2xl mb-6 overflow-hidden bg-gradient-to-br from-white via-aiu-ink-50/40 to-white">
+                <div class="px-6 py-5">
+                    <div class="flex items-center justify-center gap-3 mb-5">
+                        <span class="h-px w-12 bg-aiu-red/30"></span>
+                        <p class="text-[11px] uppercase tracking-[0.4em] text-aiu-red font-bold">Our Partners</p>
+                        <span class="h-px w-12 bg-aiu-red/30"></span>
+                    </div>
+                    <div class="flex flex-wrap items-stretch justify-center gap-5 sm:gap-8">
+                        @foreach ($partners as $partner)
+                            @php
+                                $orgName = $partner->organization ?: $partner->name;
+                                $href = $partner->org_url ?: null;
+                            @endphp
+                            <a @if ($href) href="{{ $href }}" target="_blank" rel="noopener" @else href="javascript:void(0)" @endif
+                               class="group flex flex-col items-center gap-2.5 transition"
+                               title="{{ $orgName }} — {{ $partner->name }}">
+                                <div class="w-44 h-28 sm:w-56 sm:h-32 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-aiu-line/60 p-4 group-hover:shadow-lg group-hover:border-aiu-red/40 group-hover:-translate-y-0.5 transition">
+                                    @if ($partner->org_logo_path)
+                                        <img src="{{ $partner->org_logo_url }}" alt="{{ $orgName }}" class="max-h-full max-w-full object-contain">
+                                    @else
+                                        <span class="font-heading font-bold text-3xl text-aiu-red tracking-wide">
+                                            {{ \Illuminate\Support\Str::upper($partner->org_initials) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm font-heading font-bold text-aiu-ink-900 group-hover:text-aiu-red transition">
+                                        {{ $orgName }}
+                                    </p>
+                                    <p class="text-[11px] text-aiu-ink-500 mt-0.5">{{ $partner->name }}</p>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        @endif
+
         @if ((! empty($showcaseTeams) && $showcaseTeams->isNotEmpty()) || (! empty($partners) && $partners->isNotEmpty()))
             <section class="lb-marquee-wrap card-3d rounded-2xl mb-6 overflow-hidden">
                 <div class="flex items-center gap-3 px-6 pt-4 flex-wrap">
@@ -650,37 +689,6 @@
             </p>
         </div>
 
-        @if (! empty($partners) && $partners->isNotEmpty())
-            <div class="mt-10 pt-8 border-t border-aiu-line/60">
-                <p class="text-center text-[10px] uppercase tracking-[0.4em] text-aiu-ink-400 font-bold mb-5">
-                    Sponsored by
-                </p>
-                <div class="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
-                    @foreach ($partners as $partner)
-                        @php
-                            $orgName = $partner->organization ?: $partner->name;
-                            $href = $partner->org_url ?: null;
-                        @endphp
-                        <a @if ($href) href="{{ $href }}" target="_blank" rel="noopener" @else href="#" onclick="return false" @endif
-                           class="group flex flex-col items-center gap-2 transition hover:opacity-100 opacity-80"
-                           title="{{ $orgName }} — {{ $partner->name }}">
-                            <div class="w-32 h-20 sm:w-40 sm:h-24 flex items-center justify-center bg-white rounded-xl shadow-sm border border-aiu-line/60 p-3 group-hover:shadow-md group-hover:border-aiu-red/30 transition">
-                                @if ($partner->org_logo_path)
-                                    <img src="{{ $partner->org_logo_url }}" alt="{{ $orgName }}" class="max-h-full max-w-full object-contain">
-                                @else
-                                    <span class="font-heading font-bold text-2xl text-aiu-red tracking-wide">
-                                        {{ \Illuminate\Support\Str::upper($partner->org_initials) }}
-                                    </span>
-                                @endif
-                            </div>
-                            <p class="text-xs font-semibold text-aiu-ink-700 group-hover:text-aiu-red transition">
-                                {{ $orgName }}
-                            </p>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-        @endif
 
     </section>
 </div>
