@@ -74,6 +74,35 @@ class UserResource extends Resource
                         ->columnSpanFull(),
                 ]),
 
+            Forms\Components\Section::make('Board / Partner')
+                ->description('Optional — only set if this user is a board member or industry partner.')
+                ->columns(2)
+                ->collapsible()
+                ->schema([
+                    Forms\Components\Select::make('user_category')
+                        ->label('Category')
+                        ->options(User::USER_CATEGORIES)
+                        ->placeholder('— Regular participant —')
+                        ->live(),
+                    Forms\Components\TextInput::make('organization')
+                        ->label('Organization / Company')
+                        ->helperText('e.g. "Hassan Allam Group", "Onyx Systems".')
+                        ->maxLength(191),
+                    Forms\Components\TextInput::make('org_url')
+                        ->label('Organization website')
+                        ->url()
+                        ->prefix('https://')
+                        ->maxLength(255),
+                    Forms\Components\FileUpload::make('org_logo_path')
+                        ->label('Organization logo')
+                        ->image()
+                        ->disk('public')
+                        ->directory('partner-logos')
+                        ->imageResizeMode('contain')
+                        ->maxSize(1024)
+                        ->helperText('Shown in the public partners ribbon and landing footer.'),
+                ]),
+
             Forms\Components\Section::make('Access')
                 ->columns(2)
                 ->schema([
@@ -187,6 +216,9 @@ class UserResource extends Resource
                         }
                         return $query->whereHas('roles', fn ($q) => $q->where('name', $data['value']));
                     }),
+                Tables\Filters\SelectFilter::make('user_category')
+                    ->label('Category')
+                    ->options(User::USER_CATEGORIES),
             ])
             ->actions([
                 Tables\Actions\Action::make('approve')

@@ -21,17 +21,29 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'business' => 'Business',
     ];
 
+    public const CATEGORY_BOARD = 'board';
+    public const CATEGORY_PARTNER = 'partner';
+
+    public const USER_CATEGORIES = [
+        self::CATEGORY_BOARD => 'Board Member',
+        self::CATEGORY_PARTNER => 'Partner',
+    ];
+
     protected $fillable = [
         'name',
         'email',
         'password',
         'phone',
         'institution',
+        'organization',
         'national_id',
         'bio',
         'avatar_path',
+        'org_logo_path',
+        'org_url',
         'headline',
         'primary_role',
+        'user_category',
         'social_links',
         'registration_status',
         'requested_role',
@@ -66,6 +78,51 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function getAvatarUrlAttribute(): ?string
     {
         return $this->avatar_path ? asset('storage/' . $this->avatar_path) : null;
+    }
+
+    public function getOrgLogoUrlAttribute(): ?string
+    {
+        return $this->org_logo_path ? asset('storage/' . $this->org_logo_path) : null;
+    }
+
+    public function isBoardMember(): bool
+    {
+        return $this->user_category === self::CATEGORY_BOARD;
+    }
+
+    public function isPartner(): bool
+    {
+        return $this->user_category === self::CATEGORY_PARTNER;
+    }
+
+    public function scopeBoardMembers($q)
+    {
+        return $q->where('user_category', self::CATEGORY_BOARD);
+    }
+
+    public function scopePartners($q)
+    {
+        return $q->where('user_category', self::CATEGORY_PARTNER);
+    }
+
+    /**
+     * Display label for board/partner: prefer organization name, fall back to institution then full name.
+     */
+    public function getDisplayOrgAttribute(): ?string
+    {
+        return $this->organization ?: ($this->institution ?: null);
+    }
+
+    /**
+     * Two-letter initials for the org/person — used as a logo placeholder.
+     */
+    public function getOrgInitialsAttribute(): string
+    {
+        $source = $this->organization ?: $this->name;
+        return collect(explode(' ', trim($source ?? '?')))
+            ->take(2)
+            ->map(fn ($p) => mb_substr($p, 0, 1))
+            ->implode('') ?: '?';
     }
 
     public function getFilamentAvatarUrl(): ?string

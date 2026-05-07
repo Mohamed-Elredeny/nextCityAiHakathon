@@ -131,47 +131,82 @@
             })();
         </script>
 
-        @if (! empty($showcaseTeams) && $showcaseTeams->isNotEmpty())
-            @php $ribbon = $showcaseTeams->concat($showcaseTeams); @endphp
+        @if ((! empty($showcaseTeams) && $showcaseTeams->isNotEmpty()) || (! empty($partners) && $partners->isNotEmpty()))
             <section class="lb-marquee-wrap card-3d rounded-2xl mb-6 overflow-hidden">
-                <div class="flex items-center gap-3 px-6 pt-4">
+                <div class="flex items-center gap-3 px-6 pt-4 flex-wrap">
                     <span class="inline-block w-2 h-2 rounded-full bg-aiu-red animate-pulse"></span>
-                    <p class="text-[10px] uppercase tracking-[0.3em] text-aiu-red font-bold">Meet the Teams</p>
-                    <p class="text-[11px] text-aiu-ink-400">{{ $showcaseTeams->count() }} {{ \Illuminate\Support\Str::plural('team', $showcaseTeams->count()) }}</p>
+                    <p class="text-[10px] uppercase tracking-[0.3em] text-aiu-red font-bold">Meet the Teams &amp; Partners</p>
+                    <p class="text-[11px] text-aiu-ink-400">
+                        {{ $showcaseTeams->count() }} {{ \Illuminate\Support\Str::plural('team', $showcaseTeams->count()) }}
+                        @if ($partners->isNotEmpty())
+                            · {{ $partners->count() }} {{ \Illuminate\Support\Str::plural('partner', $partners->count()) }}
+                        @endif
+                    </p>
                 </div>
                 <div class="lb-marquee py-4">
                     <div class="lb-marquee__track">
-                        @foreach ($ribbon as $team)
-                            <a href="{{ route('teams.show', $team->slug) }}" class="lb-marquee__team">
-                                <div class="lb-marquee__logo">
-                                    @if ($team->logo_path)
-                                        <img src="{{ $team->logo_url }}" alt="{{ $team->name }}" loading="lazy">
-                                    @else
-                                        <span class="lb-marquee__logo-initials">
-                                            {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($team->name, 0, 2)) }}
-                                        </span>
-                                    @endif
-                                </div>
-                                <div class="lb-marquee__meta">
-                                    <p class="lb-marquee__name">{{ $team->name }}</p>
-                                    @if ($team->tagline)
-                                        <p class="lb-marquee__tag">{{ \Illuminate\Support\Str::limit($team->tagline, 60) }}</p>
-                                    @endif
-                                </div>
-                                <div class="lb-marquee__members">
-                                    @foreach ($team->members as $member)
-                                        <div class="lb-marquee__avatar" title="{{ $member->name }}">
-                                            @if ($member->avatar_path)
-                                                <img src="{{ $member->avatar_url }}" alt="{{ $member->name }}" loading="lazy">
-                                            @else
-                                                <span>{{ $member->initials }}</span>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <div class="lb-marquee__sep"></div>
-                            </a>
-                        @endforeach
+                        @for ($pass = 0; $pass < 2; $pass++)
+                            {{-- Teams --}}
+                            @foreach ($showcaseTeams as $team)
+                                <a href="{{ route('teams.show', $team->slug) }}" class="lb-marquee__team">
+                                    <div class="lb-marquee__logo">
+                                        @if ($team->logo_path)
+                                            <img src="{{ $team->logo_url }}" alt="{{ $team->name }}" loading="lazy">
+                                        @else
+                                            <span class="lb-marquee__logo-initials">
+                                                {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($team->name, 0, 2)) }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="lb-marquee__meta">
+                                        <p class="lb-marquee__name">{{ $team->name }}</p>
+                                        @if ($team->tagline)
+                                            <p class="lb-marquee__tag">{{ \Illuminate\Support\Str::limit($team->tagline, 60) }}</p>
+                                        @endif
+                                    </div>
+                                    <div class="lb-marquee__members">
+                                        @foreach ($team->members as $member)
+                                            <div class="lb-marquee__avatar" title="{{ $member->name }}">
+                                                @if ($member->avatar_path)
+                                                    <img src="{{ $member->avatar_url }}" alt="{{ $member->name }}" loading="lazy">
+                                                @else
+                                                    <span>{{ $member->initials }}</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="lb-marquee__sep"></div>
+                                </a>
+                            @endforeach
+
+                            {{-- Partners --}}
+                            @foreach ($partners as $partner)
+                                @php
+                                    $orgName = $partner->organization ?: $partner->name;
+                                    $href = $partner->org_url ?: '#';
+                                @endphp
+                                <a href="{{ $href }}" @if ($partner->org_url) target="_blank" rel="noopener" @endif
+                                   class="lb-marquee__team lb-marquee__partner">
+                                    <div class="lb-marquee__logo lb-marquee__logo--partner">
+                                        @if ($partner->org_logo_path)
+                                            <img src="{{ $partner->org_logo_url }}" alt="{{ $orgName }}" loading="lazy">
+                                        @else
+                                            <span class="lb-marquee__logo-initials">
+                                                {{ \Illuminate\Support\Str::upper($partner->org_initials) }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="lb-marquee__meta">
+                                        <p class="lb-marquee__name">{{ $orgName }}</p>
+                                        <p class="lb-marquee__tag">
+                                            <span class="lb-marquee__badge">Partner</span>
+                                            {{ $partner->name }}
+                                        </p>
+                                    </div>
+                                    <div class="lb-marquee__sep"></div>
+                                </a>
+                            @endforeach
+                        @endfor
                     </div>
                 </div>
             </section>
@@ -258,6 +293,22 @@
                     height: 64px;
                     background: linear-gradient(180deg, transparent, #d1d5db, transparent);
                     margin: 0 0.75rem;
+                }
+                .lb-marquee__partner .lb-marquee__logo--partner {
+                    background: linear-gradient(135deg, #FEF1F3, #fff);
+                    box-shadow: 0 0 0 2px rgba(200,16,46,.15), 0 2px 8px rgba(0,0,0,.10);
+                }
+                .lb-marquee__badge {
+                    display: inline-block;
+                    background: #C8102E;
+                    color: #fff;
+                    font-size: 0.6rem;
+                    font-weight: 700;
+                    letter-spacing: 0.05em;
+                    padding: 1px 6px;
+                    border-radius: 4px;
+                    margin-right: 4px;
+                    text-transform: uppercase;
                 }
                 @keyframes lb-marquee-scroll {
                     0%   { transform: translateX(0); }
@@ -598,6 +649,38 @@
                 Server time: <span class="text-aiu-ink-700 font-semibold">{{ $serverNow->format('Y-m-d H:i:s') }}</span>
             </p>
         </div>
+
+        @if (! empty($partners) && $partners->isNotEmpty())
+            <div class="mt-10 pt-8 border-t border-aiu-line/60">
+                <p class="text-center text-[10px] uppercase tracking-[0.4em] text-aiu-ink-400 font-bold mb-5">
+                    Sponsored by
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
+                    @foreach ($partners as $partner)
+                        @php
+                            $orgName = $partner->organization ?: $partner->name;
+                            $href = $partner->org_url ?: null;
+                        @endphp
+                        <a @if ($href) href="{{ $href }}" target="_blank" rel="noopener" @else href="#" onclick="return false" @endif
+                           class="group flex flex-col items-center gap-2 transition hover:opacity-100 opacity-80"
+                           title="{{ $orgName }} — {{ $partner->name }}">
+                            <div class="w-32 h-20 sm:w-40 sm:h-24 flex items-center justify-center bg-white rounded-xl shadow-sm border border-aiu-line/60 p-3 group-hover:shadow-md group-hover:border-aiu-red/30 transition">
+                                @if ($partner->org_logo_path)
+                                    <img src="{{ $partner->org_logo_url }}" alt="{{ $orgName }}" class="max-h-full max-w-full object-contain">
+                                @else
+                                    <span class="font-heading font-bold text-2xl text-aiu-red tracking-wide">
+                                        {{ \Illuminate\Support\Str::upper($partner->org_initials) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <p class="text-xs font-semibold text-aiu-ink-700 group-hover:text-aiu-red transition">
+                                {{ $orgName }}
+                            </p>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
     </section>
 </div>

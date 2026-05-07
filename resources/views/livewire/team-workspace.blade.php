@@ -37,18 +37,25 @@
 
             $stepDefs = [
                 'overview'     => ['label' => 'Overview',          'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
+                'assignments'  => ['label' => 'Assignments',       'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
                 'report'       => ['label' => 'Solution Report',   'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'],
                 'submission'   => ['label' => 'Submission',        'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
                 'discussion'   => ['label' => 'Discussion',        'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'],
                 'team'         => ['label' => 'Team & Applications','icon' => 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5a4 4 0 11-8 0 4 4 0 018 0zm6 0a4 4 0 11-8 0 4 4 0 018 0z'],
             ];
 
+            $totalAssignments = $assignments->count();
+            $assignmentsWithAnyFiles = $assignmentSummaries->filter(fn ($s) => $s->files_count > 0)->count();
+
             $stepStatus = [
-                'overview'   => 'home',
-                'report'     => $reportDone ? 'done' : ($sectionsFilled > 0 ? 'progress' : 'todo'),
-                'submission' => $submissionDone ? 'done' : ($checklistDone > 0 ? 'progress' : 'todo'),
-                'discussion' => array_sum($channelCounts) > 0 ? 'progress' : 'todo',
-                'team'       => $pendingApplications->isNotEmpty() ? 'progress' : 'todo',
+                'overview'    => 'home',
+                'assignments' => $totalAssignments === 0 ? 'todo'
+                                  : ($assignmentsWithAnyFiles >= $totalAssignments ? 'done'
+                                  : ($assignmentsWithAnyFiles > 0 ? 'progress' : 'todo')),
+                'report'      => $reportDone ? 'done' : ($sectionsFilled > 0 ? 'progress' : 'todo'),
+                'submission'  => $submissionDone ? 'done' : ($checklistDone > 0 ? 'progress' : 'todo'),
+                'discussion'  => array_sum($channelCounts) > 0 ? 'progress' : 'todo',
+                'team'        => $pendingApplications->isNotEmpty() ? 'progress' : 'todo',
             ];
 
             $totalChannelMessages = array_sum($channelCounts);
@@ -460,6 +467,16 @@
                     </a>
                 </section>
             </div>
+
+        @elseif ($step === 'assignments')
+            {{-- ===================== STEP · ASSIGNMENTS ===================== --}}
+            @include('livewire.partials.team-workspace-assignments', [
+                'team' => $team,
+                'assignments' => $assignments,
+                'activeAssignment' => $activeAssignment,
+                'activeAssignmentSubmission' => $activeAssignmentSubmission,
+                'assignmentSummaries' => $assignmentSummaries,
+            ])
 
         @elseif ($step === 'report')
             {{-- ===================== STEP 1 · SOLUTION REPORT ===================== --}}

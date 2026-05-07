@@ -8,6 +8,7 @@ use App\Models\Phase;
 use App\Models\PitchSchedule;
 use App\Models\Score;
 use App\Models\Team;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -57,6 +58,11 @@ class BigScreen extends Component
                 ->get()
             : collect();
 
+        $partners = User::partners()
+            ->where('registration_status', 'approved')
+            ->orderBy('organization')
+            ->get();
+
         return view('livewire.big-screen', [
             'teams' => $teams,
             'edition' => $edition,
@@ -64,6 +70,7 @@ class BigScreen extends Component
             'nowPitching' => $nowPitching,
             'serverNow' => Carbon::now(),
             'showcaseTeams' => $showcaseTeams,
+            'partners' => $partners,
         ])->layout('components.layouts.bigscreen');
     }
 

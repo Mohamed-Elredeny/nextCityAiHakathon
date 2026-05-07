@@ -11,11 +11,11 @@ class MemberPhotosGallery extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
-    protected static ?string $navigationGroup = 'Galleries';
+    protected static ?string $navigationGroup = 'Media';
 
-    protected static ?string $navigationLabel = 'Member Photos';
+    protected static ?string $navigationLabel = 'Team Members';
 
-    protected static ?string $title = 'Member Photos Gallery';
+    protected static ?string $title = 'Team Members Photos';
 
     protected static ?int $navigationSort = 20;
 

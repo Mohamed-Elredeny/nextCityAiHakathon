@@ -4,6 +4,7 @@ use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\TeamAssetController;
 use App\Livewire\AttendanceCheckIn;
 use App\Livewire\BigScreen;
+use App\Livewire\JudgeAssignments;
 use App\Livewire\CommunityHub;
 use App\Livewire\CommunityPostView;
 use App\Livewire\JudgeDashboard;
@@ -74,6 +75,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/judge', JudgeDashboard::class)
         ->middleware('role:judge|super_admin')
         ->name('judge');
+    Route::get('/judge/assignments', JudgeAssignments::class)
+        ->middleware('role:judge|super_admin')
+        ->name('judge.assignments');
     Route::get('/mentor', MentorDashboard::class)
         ->middleware('role:mentor|super_admin')
         ->name('mentor');

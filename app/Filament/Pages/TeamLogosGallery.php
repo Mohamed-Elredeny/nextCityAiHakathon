@@ -10,7 +10,7 @@ class TeamLogosGallery extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-photo';
 
-    protected static ?string $navigationGroup = 'Galleries';
+    protected static ?string $navigationGroup = 'Media';
 
     protected static ?string $navigationLabel = 'Team Logos';
 

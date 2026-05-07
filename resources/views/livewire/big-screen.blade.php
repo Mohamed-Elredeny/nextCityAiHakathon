@@ -94,50 +94,76 @@
         </div>
     </main>
 
-    @if ($showcaseTeams->isNotEmpty())
-        @php
-            // Duplicate the list once so the CSS marquee can loop seamlessly.
-            $ribbon = $showcaseTeams->concat($showcaseTeams);
-        @endphp
+    @if ($showcaseTeams->isNotEmpty() || $partners->isNotEmpty())
         <section class="border-t border-aiu-line bg-gradient-to-r from-aiu-ink-50 via-white to-aiu-ink-50 py-3 overflow-hidden">
-            <div class="flex items-center gap-4 px-12 mb-2">
+            <div class="flex items-center gap-4 px-12 mb-2 flex-wrap">
                 <span class="inline-block w-2 h-2 rounded-full bg-aiu-red animate-pulse"></span>
-                <p class="text-[10px] uppercase tracking-[0.3em] text-aiu-red font-bold">Meet the Teams</p>
-                <p class="text-[11px] text-aiu-ink-400">{{ $showcaseTeams->count() }} {{ \Illuminate\Support\Str::plural('team', $showcaseTeams->count()) }}</p>
+                <p class="text-[10px] uppercase tracking-[0.3em] text-aiu-red font-bold">Meet the Teams &amp; Partners</p>
+                <p class="text-[11px] text-aiu-ink-400">
+                    {{ $showcaseTeams->count() }} {{ \Illuminate\Support\Str::plural('team', $showcaseTeams->count()) }}
+                    @if ($partners->isNotEmpty())
+                        · {{ $partners->count() }} {{ \Illuminate\Support\Str::plural('partner', $partners->count()) }}
+                    @endif
+                </p>
             </div>
             <div class="bs-marquee">
                 <div class="bs-marquee__track">
-                    @foreach ($ribbon as $team)
-                        <div class="bs-marquee__team">
-                            <div class="bs-marquee__logo">
-                                @if ($team->logo_path)
-                                    <img src="{{ $team->logo_url }}" alt="{{ $team->name }}" loading="lazy">
-                                @else
-                                    <span class="bs-marquee__logo-initials">
-                                        {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($team->name, 0, 2)) }}
-                                    </span>
-                                @endif
+                    @for ($pass = 0; $pass < 2; $pass++)
+                        @foreach ($showcaseTeams as $team)
+                            <div class="bs-marquee__team">
+                                <div class="bs-marquee__logo">
+                                    @if ($team->logo_path)
+                                        <img src="{{ $team->logo_url }}" alt="{{ $team->name }}" loading="lazy">
+                                    @else
+                                        <span class="bs-marquee__logo-initials">
+                                            {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($team->name, 0, 2)) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="bs-marquee__meta">
+                                    <p class="bs-marquee__name">{{ $team->name }}</p>
+                                    @if ($team->tagline)
+                                        <p class="bs-marquee__tag">{{ \Illuminate\Support\Str::limit($team->tagline, 60) }}</p>
+                                    @endif
+                                </div>
+                                <div class="bs-marquee__members">
+                                    @foreach ($team->members as $member)
+                                        <div class="bs-marquee__avatar" title="{{ $member->name }}">
+                                            @if ($member->avatar_path)
+                                                <img src="{{ $member->avatar_url }}" alt="{{ $member->name }}" loading="lazy">
+                                            @else
+                                                <span>{{ $member->initials }}</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="bs-marquee__sep"></div>
                             </div>
-                            <div class="bs-marquee__meta">
-                                <p class="bs-marquee__name">{{ $team->name }}</p>
-                                @if ($team->tagline)
-                                    <p class="bs-marquee__tag">{{ \Illuminate\Support\Str::limit($team->tagline, 60) }}</p>
-                                @endif
+                        @endforeach
+
+                        @foreach ($partners as $partner)
+                            @php $orgName = $partner->organization ?: $partner->name; @endphp
+                            <div class="bs-marquee__team bs-marquee__partner">
+                                <div class="bs-marquee__logo bs-marquee__logo--partner">
+                                    @if ($partner->org_logo_path)
+                                        <img src="{{ $partner->org_logo_url }}" alt="{{ $orgName }}" loading="lazy">
+                                    @else
+                                        <span class="bs-marquee__logo-initials">
+                                            {{ \Illuminate\Support\Str::upper($partner->org_initials) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="bs-marquee__meta">
+                                    <p class="bs-marquee__name">{{ $orgName }}</p>
+                                    <p class="bs-marquee__tag">
+                                        <span class="bs-marquee__badge">Partner</span>
+                                        {{ $partner->name }}
+                                    </p>
+                                </div>
+                                <div class="bs-marquee__sep"></div>
                             </div>
-                            <div class="bs-marquee__members">
-                                @foreach ($team->members as $member)
-                                    <div class="bs-marquee__avatar" title="{{ $member->name }}">
-                                        @if ($member->avatar_path)
-                                            <img src="{{ $member->avatar_url }}" alt="{{ $member->name }}" loading="lazy">
-                                        @else
-                                            <span>{{ $member->initials }}</span>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="bs-marquee__sep"></div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    @endfor
                 </div>
             </div>
         </section>
@@ -236,11 +262,55 @@
                 background: linear-gradient(180deg, transparent, #d1d5db, transparent);
                 margin: 0 0.75rem;
             }
+            .bs-marquee__partner .bs-marquee__logo--partner {
+                background: linear-gradient(135deg, #FEF1F3, #fff);
+                box-shadow: 0 0 0 2px rgba(200,16,46,.18), 0 2px 8px rgba(0,0,0,.10);
+            }
+            .bs-marquee__badge {
+                display: inline-block;
+                background: #C8102E;
+                color: #fff;
+                font-size: 0.65rem;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                padding: 1px 6px;
+                border-radius: 4px;
+                margin-right: 4px;
+                text-transform: uppercase;
+            }
             @keyframes bs-marquee-scroll {
                 0%   { transform: translateX(0); }
                 100% { transform: translateX(-50%); }
             }
         </style>
+    @endif
+
+    @if ($partners->isNotEmpty())
+        <section class="px-12 py-3 bg-white/95 backdrop-blur-md border-t border-aiu-line flex items-center gap-6">
+            <p class="text-[10px] uppercase tracking-[0.32em] text-aiu-ink-400 font-bold whitespace-nowrap">
+                Sponsored by
+            </p>
+            <div class="flex items-center gap-6 flex-1 overflow-hidden">
+                @foreach ($partners as $partner)
+                    @php $orgName = $partner->organization ?: $partner->name; @endphp
+                    <div class="flex items-center gap-3 flex-shrink-0" title="{{ $orgName }}">
+                        <div class="w-14 h-14 rounded-lg bg-white border border-aiu-line/60 shadow-sm flex items-center justify-center p-1.5">
+                            @if ($partner->org_logo_path)
+                                <img src="{{ $partner->org_logo_url }}" alt="{{ $orgName }}" class="max-h-full max-w-full object-contain">
+                            @else
+                                <span class="font-heading font-bold text-aiu-red text-sm">
+                                    {{ \Illuminate\Support\Str::upper($partner->org_initials) }}
+                                </span>
+                            @endif
+                        </div>
+                        <div>
+                            <p class="font-heading font-bold text-sm text-aiu-ink-900 leading-tight">{{ $orgName }}</p>
+                            <p class="text-[10px] text-aiu-ink-400">{{ $partner->name }}</p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
     @endif
 
     <footer class="py-3 px-12 bg-white/85 backdrop-blur-md border-t border-aiu-line flex items-center justify-between text-xs text-aiu-ink-600">

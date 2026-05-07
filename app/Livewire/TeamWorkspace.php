@@ -2,6 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Models\Assignment;
+use App\Models\AssignmentFile;
+use App\Models\AssignmentSubmission;
 use App\Models\Phase;
 use App\Models\Submission;
 use App\Models\Team;
@@ -44,7 +47,15 @@ class TeamWorkspace extends Component
     public ?string $recruitingSaved = null;
     public array $applicationResponses = [];
 
-    public const STEPS = ['overview', 'report', 'submission', 'discussion', 'team'];
+    public const STEPS = ['overview', 'assignments', 'report', 'submission', 'discussion', 'team'];
+
+    // Assignment tab state
+    public ?int $activeAssignmentId = null;
+    public string $assignmentNotes = '';
+    public string $assignmentFileComment = '';
+    public $newAssignmentFile = null;
+    public ?string $assignmentError = null;
+    public ?string $assignmentSaved = null;
 
     public string $slidesUrl = '';
     public string $repoUrl = '';
@@ -639,6 +650,148 @@ class TeamWorkspace extends Component
     }
 
     #[Layout('components.layouts.public')]
+    // ==================== Assignments ====================
+
+    public function selectAssignment(int $assignmentId): void
+    {
+        $this->activeAssignmentId = $assignmentId;
+        $this->assignmentError = null;
+        $this->assignmentSaved = null;
+        $this->newAssignmentFile = null;
+        $this->assignmentFileComment = '';
+
+        $sub = $this->getOrCreateAssignmentSubmission($assignmentId);
+        $this->assignmentNotes = $sub?->notes ?? '';
+    }
+
+    public function saveAssignmentNotes(): void
+    {
+        if (! $this->activeAssignmentId || ! $this->teamId) return;
+        if (! $this->canEditAssignment()) {
+            $this->assignmentError = 'Submission window is closed.';
+            return;
+        }
+
+        $sub = $this->getOrCreateAssignmentSubmission($this->activeAssignmentId);
+        $sub->notes = $this->assignmentNotes;
+        $sub->last_activity_at = now();
+        $sub->last_activity_by = Auth::id();
+        $sub->save();
+
+        $this->assignmentSaved = 'Notes saved.';
+    }
+
+    public function uploadAssignmentFile(): void
+    {
+        $this->assignmentError = null;
+        $this->assignmentSaved = null;
+
+        if (! $this->activeAssignmentId || ! $this->teamId) {
+            $this->assignmentError = 'Pick an assignment first.';
+            return;
+        }
+        if (! $this->newAssignmentFile) {
+            $this->assignmentError = 'Choose a file to upload.';
+            return;
+        }
+        if (! $this->canEditAssignment()) {
+            $this->assignmentError = 'Submission window is closed.';
+            return;
+        }
+
+        $assignment = Assignment::find($this->activeAssignmentId);
+        if (! $assignment) {
+            $this->assignmentError = 'Assignment no longer exists.';
+            return;
+        }
+
+        $rules = ['newAssignmentFile' => ['required', 'file', 'max:' . max(1, (int) $assignment->max_file_size_kb)]];
+        if (! empty($assignment->accepted_extensions)) {
+            $rules['newAssignmentFile'][] = 'mimes:' . implode(',', $assignment->accepted_extensions);
+        }
+        $this->validate($rules);
+
+        $sub = $this->getOrCreateAssignmentSubmission($this->activeAssignmentId);
+        if ($sub->files()->count() >= (int) $assignment->max_files) {
+            $this->assignmentError = 'You\'ve reached the maximum of ' . $assignment->max_files . ' files for this assignment. Delete an old one to add a new one.';
+            return;
+        }
+
+        $stored = $this->newAssignmentFile->store('assignments/' . $assignment->slug . '/team-' . $this->teamId, 'public');
+        $original = $this->newAssignmentFile->getClientOriginalName();
+        $size = $this->newAssignmentFile->getSize() ?: 0;
+        $mime = $this->newAssignmentFile->getMimeType();
+
+        AssignmentFile::create([
+            'assignment_submission_id' => $sub->id,
+            'uploaded_by' => Auth::id(),
+            'file_path' => $stored,
+            'original_name' => $original,
+            'size_bytes' => $size,
+            'mime_type' => $mime,
+            'comment' => trim($this->assignmentFileComment) ?: null,
+        ]);
+
+        if (! $sub->first_submitted_at) {
+            $sub->first_submitted_at = now();
+        }
+        $sub->last_activity_at = now();
+        $sub->last_activity_by = Auth::id();
+        $sub->save();
+
+        $this->newAssignmentFile = null;
+        $this->assignmentFileComment = '';
+        $this->assignmentSaved = 'File uploaded.';
+    }
+
+    public function deleteAssignmentFile(int $fileId): void
+    {
+        if (! $this->teamId) return;
+
+        $file = AssignmentFile::with('submission.assignment')->find($fileId);
+        if (! $file || $file->submission->team_id !== $this->teamId) {
+            $this->assignmentError = 'File not found.';
+            return;
+        }
+        // Only the uploader (or team leader) can delete; admin uses Filament.
+        $team = Team::find($this->teamId);
+        $userId = Auth::id();
+        if ($file->uploaded_by !== $userId && $team?->leader_id !== $userId) {
+            $this->assignmentError = 'Only the uploader or the team leader can remove this file.';
+            return;
+        }
+
+        if (! $this->canEditAssignment($file->submission->assignment)) {
+            $this->assignmentError = 'Submission window is closed.';
+            return;
+        }
+
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($file->file_path);
+        $file->delete();
+
+        $sub = $file->submission;
+        $sub->last_activity_at = now();
+        $sub->last_activity_by = $userId;
+        $sub->save();
+
+        $this->assignmentSaved = 'File removed.';
+    }
+
+    private function getOrCreateAssignmentSubmission(int $assignmentId): ?AssignmentSubmission
+    {
+        if (! $this->teamId) return null;
+        return AssignmentSubmission::firstOrCreate(
+            ['assignment_id' => $assignmentId, 'team_id' => $this->teamId],
+            ['last_activity_at' => now(), 'last_activity_by' => Auth::id()],
+        );
+    }
+
+    private function canEditAssignment(?Assignment $assignment = null): bool
+    {
+        $assignment = $assignment ?: ($this->activeAssignmentId ? Assignment::find($this->activeAssignmentId) : null);
+        return $assignment ? $assignment->isOpen() : false;
+    }
+
     public function render()
     {
         $team = $this->teamId ? Team::with(['theme', 'leader', 'members'])->find($this->teamId) : null;
@@ -713,6 +866,45 @@ class TeamWorkspace extends Component
                 ->get()
             : collect();
 
+        // Assignments visible to this team (active, scoped by edition)
+        $assignments = $team
+            ? Assignment::query()
+                ->where('is_active', true)
+                ->where(function ($q) use ($team) {
+                    $q->whereNull('edition_id')->orWhere('edition_id', $team->edition_id);
+                })
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get()
+            : collect();
+
+        // Auto-pick the first assignment when entering the tab if none selected
+        if ($this->step === 'assignments' && ! $this->activeAssignmentId && $assignments->isNotEmpty()) {
+            $this->selectAssignment($assignments->first()->id);
+        }
+
+        $activeAssignment = $this->activeAssignmentId ? $assignments->firstWhere('id', $this->activeAssignmentId) : null;
+        $activeAssignmentSubmission = ($activeAssignment && $team)
+            ? AssignmentSubmission::with([
+                    'files.uploader',
+                    'lastActivityBy',
+                    'scores.judge:id,name,avatar_path',
+                ])
+                ->where('assignment_id', $activeAssignment->id)
+                ->where('team_id', $team->id)
+                ->first()
+            : null;
+
+        // Per-assignment summary for the tab nav (file count + grade)
+        $assignmentSummaries = $team
+            ? AssignmentSubmission::where('team_id', $team->id)
+                ->whereIn('assignment_id', $assignments->pluck('id'))
+                ->withCount('files')
+                ->with('scores:id,assignment_submission_id,score')
+                ->get()
+                ->keyBy('assignment_id')
+            : collect();
+
         return view('livewire.team-workspace', [
             'team' => $team,
             'themes' => $themes,
@@ -737,6 +929,10 @@ class TeamWorkspace extends Component
             'finalsAllowed' => $finalsAllowed,
             'pendingApplications' => $pendingApplications,
             'reviewedApplications' => $reviewedApplications,
+            'assignments' => $assignments,
+            'activeAssignment' => $activeAssignment,
+            'activeAssignmentSubmission' => $activeAssignmentSubmission,
+            'assignmentSummaries' => $assignmentSummaries,
         ]);
     }
 }

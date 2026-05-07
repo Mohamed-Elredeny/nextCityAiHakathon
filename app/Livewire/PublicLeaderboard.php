@@ -96,6 +96,12 @@ class PublicLeaderboard extends Component
                 ->get()
             : collect();
 
+        // Partners shown in the marquee + landing footer.
+        $partners = User::partners()
+            ->where('registration_status', 'approved')
+            ->orderBy('organization')
+            ->get();
+
         return view('livewire.public-leaderboard', [
             'teams' => $teams,
             'edition' => $edition,
@@ -106,6 +112,7 @@ class PublicLeaderboard extends Component
             'judges' => $judges,
             'scoreLookup' => $scoreLookup,
             'showcaseTeams' => $showcaseTeams,
+            'partners' => $partners,
             'criteria' => [
                 'innovation' => ['label' => 'Innovation', 'weight' => 0.20],
                 'technical'  => ['label' => 'Technical',  'weight' => 0.25],
