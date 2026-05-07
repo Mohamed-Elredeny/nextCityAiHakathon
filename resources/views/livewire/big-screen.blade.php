@@ -177,11 +177,14 @@
                         @endforeach
 
                         @foreach ($partners as $partner)
-                            @php $orgName = $partner->organization ?: $partner->name; @endphp
+                            @php
+                                $orgName = $partner->organization ?: $partner->name;
+                                $partnerLogo = $partner->org_logo_url ?: $partner->avatar_url;
+                            @endphp
                             <div class="bs-marquee__team bs-marquee__partner">
                                 <div class="bs-marquee__logo bs-marquee__logo--partner">
-                                    @if ($partner->org_logo_path)
-                                        <img src="{{ $partner->org_logo_url }}" alt="{{ $orgName }}" loading="lazy">
+                                    @if ($partnerLogo)
+                                        <img src="{{ $partnerLogo }}" alt="{{ $orgName }}" loading="lazy">
                                     @else
                                         <span class="bs-marquee__logo-initials">
                                             {{ \Illuminate\Support\Str::upper($partner->org_initials) }}
@@ -327,11 +330,14 @@
             </p>
             <div class="flex items-center gap-6 flex-1 overflow-hidden">
                 @foreach ($partners as $partner)
-                    @php $orgName = $partner->organization ?: $partner->name; @endphp
+                    @php
+                        $orgName = $partner->organization ?: $partner->name;
+                        $partnerLogo = $partner->org_logo_url ?: $partner->avatar_url;
+                    @endphp
                     <div class="flex items-center gap-3 flex-shrink-0" title="{{ $orgName }}">
                         <div class="w-14 h-14 rounded-lg bg-white border border-aiu-line/60 shadow-sm flex items-center justify-center p-1.5">
-                            @if ($partner->org_logo_path)
-                                <img src="{{ $partner->org_logo_url }}" alt="{{ $orgName }}" class="max-h-full max-w-full object-contain">
+                            @if ($partnerLogo)
+                                <img src="{{ $partnerLogo }}" alt="{{ $orgName }}" class="max-h-full max-w-full object-contain">
                             @else
                                 <span class="font-heading font-bold text-aiu-red text-sm">
                                     {{ \Illuminate\Support\Str::upper($partner->org_initials) }}

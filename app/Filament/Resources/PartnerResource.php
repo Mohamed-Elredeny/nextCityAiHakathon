@@ -58,7 +58,8 @@ class PartnerResource extends Resource
                         ->tel()
                         ->maxLength(50),
                     Forms\Components\FileUpload::make('avatar_path')
-                        ->label('Personal photo')
+                        ->label('Personal photo (optional)')
+                        ->helperText('Photo of the representative — NOT the company logo. Use the Organization section for the logo.')
                         ->image()
                         ->avatar()
                         ->disk('public')
@@ -81,14 +82,14 @@ class PartnerResource extends Resource
                         ->placeholder('hassanallam.com')
                         ->maxLength(255),
                     Forms\Components\FileUpload::make('org_logo_path')
-                        ->label('Organization logo')
+                        ->label('Organization logo ★ (this is what shows on the home page)')
                         ->image()
                         ->disk('public')
                         ->directory('partner-logos')
                         ->imageResizeMode('contain')
                         ->maxSize(1024)
                         ->columnSpanFull()
-                        ->helperText('Shown on the public landing page in the "Our Partners" section.'),
+                        ->helperText('Upload the COMPANY LOGO here — this is the image that appears in the "Our Partners" section on the public landing page and the marquee.'),
                     Forms\Components\Textarea::make('headline')
                         ->label('Headline')
                         ->rows(2)
