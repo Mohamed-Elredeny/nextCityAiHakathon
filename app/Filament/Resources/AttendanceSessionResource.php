@@ -140,6 +140,13 @@ class AttendanceSessionResource extends Resource
             ->defaultSort('starts_at');
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\Resources\AttendanceSessionResource\RelationManagers\AttendancesRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [

@@ -22,6 +22,41 @@
         </div>
     </header>
 
+    @if ($activeAttendanceSessions->isNotEmpty())
+        <div class="px-12 py-3 bg-gradient-to-r from-emerald-50 via-white to-emerald-50 border-b border-aiu-line flex items-center gap-6 flex-wrap">
+            <div class="flex items-center gap-3">
+                <span class="relative inline-flex items-center justify-center w-3 h-3">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <p class="text-[10px] uppercase tracking-[0.32em] text-emerald-700 font-bold">Live Attendance</p>
+            </div>
+            <div class="flex items-center gap-6 flex-1 flex-wrap">
+                @foreach ($activeAttendanceSessions as $session)
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-heading text-3xl font-bold text-emerald-700 tabular-nums leading-none">
+                            {{ $session->attendances_count }}
+                        </span>
+                        <div class="flex flex-col">
+                            <span class="font-heading text-sm font-bold text-aiu-ink-900 leading-tight">{{ $session->name }}</span>
+                            <span class="text-[10px] uppercase tracking-wider text-aiu-ink-500">checked in</span>
+                        </div>
+                    </div>
+                @endforeach
+                @if ($activeAttendanceSessions->count() > 1)
+                    <div class="flex items-baseline gap-2 ml-auto pl-6 border-l border-emerald-200">
+                        <span class="font-heading text-3xl font-bold text-aiu-ink-900 tabular-nums leading-none">
+                            {{ $todayCheckIns }}
+                        </span>
+                        <div class="flex flex-col">
+                            <span class="text-[11px] uppercase tracking-wider text-aiu-ink-500 font-semibold">total today</span>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
+
     @if ($nowPitching && $nowPitching->team)
         <div class="px-12 py-5 bg-gradient-to-r from-aiu-red-50 via-white to-aiu-gold-50 border-b border-aiu-line flex items-center gap-6">
             <div class="w-16 h-16 rounded-2xl btn-aiu-solid flex items-center justify-center animate-pulse">

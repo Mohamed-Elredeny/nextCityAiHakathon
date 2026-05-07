@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Models\Attendance;
+use App\Models\AttendanceSession;
 use App\Models\Edition;
 use App\Models\PeoplesChoiceVote;
 use App\Models\Phase;
@@ -63,6 +65,25 @@ class BigScreen extends Component
             ->orderBy('organization')
             ->get();
 
+        // Live attendance — current open session(s) and counts.
+        $now = Carbon::now();
+        $activeAttendanceSessions = AttendanceSession::query()
+            ->where('is_active', true)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('starts_at')->orWhere('starts_at', '<=', $now);
+            })
+            ->where(function ($q) use ($now) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>=', $now);
+            })
+            ->withCount('attendances')
+            ->orderBy('starts_at')
+            ->get();
+
+        // Total checked-in across all sessions today (or recent if no time-bound sessions)
+        $todayCheckIns = Attendance::query()
+            ->whereDate('checked_in_at', $now->toDateString())
+            ->count();
+
         return view('livewire.big-screen', [
             'teams' => $teams,
             'edition' => $edition,
@@ -71,6 +92,8 @@ class BigScreen extends Component
             'serverNow' => Carbon::now(),
             'showcaseTeams' => $showcaseTeams,
             'partners' => $partners,
+            'activeAttendanceSessions' => $activeAttendanceSessions,
+            'todayCheckIns' => $todayCheckIns,
         ])->layout('components.layouts.bigscreen');
     }
 
