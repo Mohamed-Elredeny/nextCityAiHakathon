@@ -107,7 +107,22 @@ class AttendanceSessionResource extends Resource
                     ->label('QR & Roster')
                     ->icon('heroicon-o-qr-code')
                     ->color('primary')
-                    ->url(fn (AttendanceSession $record) => Pages\ShowAttendanceQr::getUrl(['record' => $record])),
+                    ->modalHeading(fn (AttendanceSession $record) => $record->name . ' — QR & Roster')
+                    ->modalWidth('5xl')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->modalContent(fn (AttendanceSession $record) => view(
+                        'filament.resources.attendance-session-resource.partials.qr-and-roster',
+                        [
+                            'record' => $record->load('attendances.user'),
+                            'checkInUrl' => $record->check_in_url,
+                            'isOpen' => $record->isOpenForCheckIn(),
+                            'roster' => $record->attendances()
+                                ->with('user')
+                                ->orderByDesc('checked_in_at')
+                                ->get(),
+                        ],
+                    )),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -125,7 +140,6 @@ class AttendanceSessionResource extends Resource
             'index' => Pages\ListAttendanceSessions::route('/'),
             'create' => Pages\CreateAttendanceSession::route('/create'),
             'edit' => Pages\EditAttendanceSession::route('/{record}/edit'),
-            'qr' => Pages\ShowAttendanceQr::route('/{record}/qr'),
         ];
     }
 }
