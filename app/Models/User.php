@@ -181,15 +181,16 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     }
 
     /**
-     * Profile must be complete (basic fields filled) AND have a profile photo
-     * before a participant is allowed to check in for attendance.
+     * Profile must be complete (basic public fields filled) AND have a profile
+     * photo before a participant is allowed to check in for attendance.
+     * National ID is intentionally NOT checked here — it's not part of the
+     * public profile form.
      */
     public function isProfileComplete(): bool
     {
         return filled($this->name)
             && filled($this->phone)
             && filled($this->institution)
-            && filled($this->national_id)
             && filled($this->avatar_path);
     }
 
@@ -202,7 +203,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             'name' => 'Full name',
             'phone' => 'Phone number',
             'institution' => 'Institution / University',
-            'national_id' => 'National ID',
             'avatar_path' => 'Profile photo',
         ];
 

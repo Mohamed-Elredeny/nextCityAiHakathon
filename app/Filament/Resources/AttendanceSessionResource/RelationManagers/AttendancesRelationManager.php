@@ -170,7 +170,7 @@ class AttendancesRelationManager extends RelationManager
             // BOM so Excel reads UTF-8 correctly
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, [
-                '#', 'Name', 'Email', 'Institution', 'Phone', 'National ID',
+                '#', 'Name', 'Email', 'Institution', 'Phone',
                 'Checked-in at', 'Source', 'IP', 'Added by',
             ]);
             $i = 1;
@@ -181,7 +181,6 @@ class AttendancesRelationManager extends RelationManager
                     $a->user?->email ?? '',
                     $a->user?->institution ?? '',
                     $a->user?->phone ?? '',
-                    $a->user?->national_id ?? '',
                     optional($a->checked_in_at)?->format('Y-m-d H:i:s'),
                     $a->source,
                     $a->ip_address ?? '',
