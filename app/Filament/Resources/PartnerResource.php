@@ -59,11 +59,11 @@ class PartnerResource extends Resource
                         ->maxLength(50),
                     Forms\Components\FileUpload::make('avatar_path')
                         ->label('Personal photo (optional)')
-                        ->helperText('Photo of the representative — NOT the company logo. Use the Organization section for the logo.')
+                        ->helperText('Photo of the representative — NOT the company logo. Use the Organization section below for the logo.')
                         ->image()
-                        ->avatar()
                         ->disk('public')
                         ->directory('avatars')
+                        ->imageResizeMode('contain')
                         ->maxSize(2048),
                 ]),
 
