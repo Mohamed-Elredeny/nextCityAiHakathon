@@ -160,6 +160,20 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->searchable()
                     ->copyable(),
+                Tables\Columns\TextColumn::make('user_category')
+                    ->label('Category')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state) => $state ? (User::USER_CATEGORIES[$state] ?? $state) : '—')
+                    ->color(fn (?string $state): string => match ($state) {
+                        User::CATEGORY_BOARD => 'info',
+                        User::CATEGORY_PARTNER => 'warning',
+                        default => 'gray',
+                    })
+                    ->placeholder('—')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('organization')
+                    ->placeholder('—')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('registration_status')
                     ->label('Status')
                     ->badge()
@@ -221,6 +235,25 @@ class UserResource extends Resource
                     ->options(User::USER_CATEGORIES),
             ])
             ->actions([
+                Tables\Actions\Action::make('reset_password')
+                    ->label('Reset password')
+                    ->icon('heroicon-o-key')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Generate a new temporary password')
+                    ->modalDescription(fn (User $record) => 'A new random password will replace ' . $record->name . "'s current one. The new password will be shown ONCE — copy it before closing the notification.")
+                    ->modalSubmitActionLabel('Generate')
+                    ->action(function (User $record) {
+                        $newPassword = \Illuminate\Support\Str::random(12);
+                        $record->forceFill(['password' => Hash::make($newPassword)])->save();
+
+                        Notification::make()
+                            ->title('Password reset for ' . $record->name)
+                            ->body('New password: ' . $newPassword . ' — copy NOW, it will not be shown again.')
+                            ->success()
+                            ->persistent()
+                            ->send();
+                    }),
                 Tables\Actions\Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
