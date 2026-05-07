@@ -9,7 +9,7 @@ class PitchSchedule extends Model
 {
     protected $table = 'pitch_schedule';
 
-    protected $fillable = ['team_id', 'round', 'slot_index', 'scheduled_start', 'started_at', 'ended_at'];
+    protected $fillable = ['team_id', 'round', 'room', 'slot_index', 'scheduled_start', 'started_at', 'ended_at'];
 
     protected $casts = [
         'scheduled_start' => 'datetime',
@@ -17,8 +17,15 @@ class PitchSchedule extends Model
         'ended_at' => 'datetime',
     ];
 
+    public const ROOMS = ['A', 'B', 'C'];
+
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function getRoomLabelAttribute(): string
+    {
+        return $this->room ? 'Room ' . $this->room : '—';
     }
 }

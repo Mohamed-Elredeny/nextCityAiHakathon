@@ -29,6 +29,10 @@ class PitchScheduleResource extends Resource
         return $form->schema([
             Forms\Components\Select::make('team_id')->relationship('team', 'name')->required()->searchable(),
             Forms\Components\Select::make('round')->options(['round1' => 'Round 1', 'finals' => 'Finals'])->required(),
+            Forms\Components\Select::make('room')
+                ->options(collect(\App\Models\PitchSchedule::ROOMS)->mapWithKeys(fn ($r) => [$r => 'Room ' . $r])->all())
+                ->placeholder('—')
+                ->helperText('Day-2 round 1 has 3 parallel rooms. Leave blank for finals (single room).'),
             Forms\Components\TextInput::make('slot_index')->numeric()->required(),
             Forms\Components\DateTimePicker::make('scheduled_start'),
             Forms\Components\DateTimePicker::make('started_at')->disabled(),
@@ -40,6 +44,14 @@ class PitchScheduleResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('room')
+                    ->label('Room')
+                    ->badge()
+                    ->color(fn (?string $state) => match ($state) {
+                        'A' => 'info', 'B' => 'warning', 'C' => 'success', default => 'gray',
+                    })
+                    ->placeholder('—')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('slot_index')->label('#')->sortable()->alignCenter(),
                 Tables\Columns\TextColumn::make('team.name')->label('Team')->searchable()->weight('semibold'),
                 Tables\Columns\TextColumn::make('round')->badge()->color(fn (string $state) => $state === 'finals' ? 'warning' : 'info'),
@@ -59,7 +71,10 @@ class PitchScheduleResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('round')->options(['round1' => 'Round 1', 'finals' => 'Finals']),
+                Tables\Filters\SelectFilter::make('room')
+                    ->options(collect(\App\Models\PitchSchedule::ROOMS)->mapWithKeys(fn ($r) => [$r => 'Room ' . $r])->all()),
             ])
+            ->defaultSort('scheduled_start')
             ->headerActions([
                 Tables\Actions\Action::make('generate')
                     ->label('Generate schedule')
