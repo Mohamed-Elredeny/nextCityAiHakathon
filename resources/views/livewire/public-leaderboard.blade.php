@@ -30,7 +30,7 @@
                         <span class="block mt-2 bg-gradient-to-r from-aiu-red to-aiu-red-700 bg-clip-text text-transparent">Scoreboard</span>
                     </h1>
                     <p class="mt-5 text-base lg:text-lg text-aiu-ink-600 leading-relaxed max-w-xl">
-                        Live scores from every judge across the official 6-criterion rubric.
+                        Live scores from every judge across the official 5-criterion rubric (each weighted 20%).
                     </p>
                 </div>
 

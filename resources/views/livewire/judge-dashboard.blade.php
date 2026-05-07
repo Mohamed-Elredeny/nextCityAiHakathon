@@ -7,7 +7,7 @@
             </p>
             <h1 class="font-heading text-4xl lg:text-5xl font-bold text-aiu-ink-900">Score Submissions</h1>
             <p class="mt-2 text-sm text-aiu-ink-600">
-                Score each assigned team on the official 6-criterion rubric. Once locked, scores cannot be edited.
+                Score each assigned team on the official 5-criterion rubric (each weighted 20%). Once locked, scores cannot be edited.
             </p>
         </div>
         <div class="inline-flex p-1 rounded-xl chip-3d gap-1 self-start lg:self-auto">
@@ -147,8 +147,8 @@
                             @php $current = (int) round((float) $scores[$criterion]); @endphp
                             <div>
                                 <div class="flex items-center justify-between mb-2">
-                                    <label class="text-sm font-bold text-aiu-ink-900 capitalize">
-                                        {{ str_replace('_', ' ', $criterion) }}
+                                    <label class="text-sm font-bold text-aiu-ink-900">
+                                        {{ \App\Models\Score::LABELS[$criterion] ?? str_replace('_', ' ', $criterion) }}
                                         <span class="ml-2 text-[10px] uppercase tracking-wider text-aiu-red font-bold">{{ ($weight * 100) }}%</span>
                                     </label>
                                     <span class="font-mono text-lg font-bold text-aiu-red tabular-nums w-12 text-right">

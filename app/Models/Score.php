@@ -9,28 +9,42 @@ class Score extends Model
 {
     protected $fillable = [
         'judge_id', 'team_id', 'round',
-        'innovation', 'technical', 'impact', 'ux', 'pitch', 'business',
+        'business_viability', 'technical_feasibility', 'impact_relevance',
+        'team_skills', 'presentation_skills',
         'weighted_total', 'comment', 'locked_at',
     ];
 
     protected $casts = [
-        'innovation' => 'decimal:2',
-        'technical' => 'decimal:2',
-        'impact' => 'decimal:2',
-        'ux' => 'decimal:2',
-        'pitch' => 'decimal:2',
-        'business' => 'decimal:2',
+        'business_viability' => 'decimal:2',
+        'technical_feasibility' => 'decimal:2',
+        'impact_relevance' => 'decimal:2',
+        'team_skills' => 'decimal:2',
+        'presentation_skills' => 'decimal:2',
         'weighted_total' => 'decimal:2',
         'locked_at' => 'datetime',
     ];
 
+    /**
+     * Day-2 pitching rubric — 5 criteria, equal 20% weights each.
+     */
     public const WEIGHTS = [
-        'innovation' => 0.20,
-        'technical' => 0.25,
-        'impact' => 0.20,
-        'ux' => 0.15,
-        'pitch' => 0.10,
-        'business' => 0.10,
+        'business_viability' => 0.20,
+        'technical_feasibility' => 0.20,
+        'impact_relevance' => 0.20,
+        'team_skills' => 0.20,
+        'presentation_skills' => 0.20,
+    ];
+
+    /**
+     * Human-readable labels for the rubric — used by judge dashboard,
+     * leaderboard, and any score breakdowns.
+     */
+    public const LABELS = [
+        'business_viability' => 'Business Viability',
+        'technical_feasibility' => 'Technical Feasibility',
+        'impact_relevance' => 'Impact & Relevance',
+        'team_skills' => 'Team Business & Technical Skills',
+        'presentation_skills' => 'Presentation & Communication Skills',
     ];
 
     public function judge(): BelongsTo

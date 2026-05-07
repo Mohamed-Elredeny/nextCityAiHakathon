@@ -21,7 +21,7 @@ class JudgeDashboard extends Component
     public ?int $themeFilter = null;
     public string $teamSearch = '';
     public ?int $selectedTeamId = null;
-    public array $scores = ['innovation' => 0, 'technical' => 0, 'impact' => 0, 'ux' => 0, 'pitch' => 0, 'business' => 0];
+    public array $scores = ['business_viability' => 0, 'technical_feasibility' => 0, 'impact_relevance' => 0, 'team_skills' => 0, 'presentation_skills' => 0];
     public string $comment = '';
     public string $newMessage = '';
     public ?string $errorMessage = null;
@@ -83,7 +83,7 @@ class JudgeDashboard extends Component
 
     protected function resetScoreForm(): void
     {
-        $this->scores = ['innovation' => 0, 'technical' => 0, 'impact' => 0, 'ux' => 0, 'pitch' => 0, 'business' => 0];
+        $this->scores = ['business_viability' => 0, 'technical_feasibility' => 0, 'impact_relevance' => 0, 'team_skills' => 0, 'presentation_skills' => 0];
         $this->comment = '';
     }
 
