@@ -73,6 +73,14 @@ class AttendanceSessionResource extends Resource
     {
         return $table
             ->columns([
+                // Inline QR thumbnail. Image is served by the same origin via
+                // /attendance-qr/{token}.png so a strict CSP (default-src 'self')
+                // doesn't block it. Click-through opens the full-size QR in a
+                // new tab — perfect for showing on a projector.
+                Tables\Columns\ViewColumn::make('qr')
+                    ->label('QR')
+                    ->view('filament.resources.attendance-session-resource.columns.qr-thumbnail'),
+
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
@@ -96,6 +104,16 @@ class AttendanceSessionResource extends Resource
                     ->counts('attendances')
                     ->alignCenter()
                     ->sortable(),
+
+                // Direct check-in URL with copy button.
+                Tables\Columns\TextColumn::make('check_in_url')
+                    ->label('Check-in link')
+                    ->state(fn (AttendanceSession $record) => $record->check_in_url)
+                    ->copyable()
+                    ->copyMessage('Link copied!')
+                    ->icon('heroicon-o-clipboard')
+                    ->limit(40)
+                    ->tooltip(fn (AttendanceSession $record) => $record->check_in_url),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('type')
@@ -103,26 +121,14 @@ class AttendanceSessionResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_active')->label('Active'),
             ])
             ->actions([
-                Tables\Actions\Action::make('qr')
-                    ->label('QR & Roster')
+                // Standard plain link — opens the QR PNG full-size in a new tab.
+                // Pure HTML, no JS, no modal, no Filament action mechanics.
+                Tables\Actions\Action::make('show_qr')
+                    ->label('Show QR')
                     ->icon('heroicon-o-qr-code')
                     ->color('primary')
-                    ->modalHeading(fn (AttendanceSession $record) => $record->name . ' — QR & Roster')
-                    ->modalWidth('5xl')
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Close')
-                    ->modalContent(fn (AttendanceSession $record) => view(
-                        'filament.resources.attendance-session-resource.partials.qr-and-roster',
-                        [
-                            'record' => $record->load('attendances.user'),
-                            'checkInUrl' => $record->check_in_url,
-                            'isOpen' => $record->isOpenForCheckIn(),
-                            'roster' => $record->attendances()
-                                ->with('user')
-                                ->orderByDesc('checked_in_at')
-                                ->get(),
-                        ],
-                    )),
+                    ->url(fn (AttendanceSession $record) => route('attendance.qr-image', $record->token))
+                    ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

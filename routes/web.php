@@ -51,6 +51,40 @@ Route::get('/vote/qr', function () {
 Route::get('/attendance/{token}', AttendanceCheckIn::class)
     ->name('attendance.check-in');
 
+// Server-rendered QR image for the attendance check-in URL.
+// Lives on the same origin so a strict CSP (default-src 'self') still allows it.
+// Cached at the file system layer so we don't hammer the upstream API.
+Route::get('/attendance-qr/{token}.png', function (string $token) {
+    abort_unless(\App\Models\AttendanceSession::where('token', $token)->exists(), 404);
+
+    $cacheKey = 'attendance_qr_' . $token;
+    $png = \Illuminate\Support\Facades\Cache::remember(
+        $cacheKey,
+        now()->addDays(7),
+        function () use ($token) {
+            $url = route('attendance.check-in', $token);
+            $endpoint = 'https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=10&data=' . urlencode($url);
+            try {
+                $ctx = stream_context_create([
+                    'http' => ['timeout' => 5, 'header' => "User-Agent: AIU-Hackathon-QR/1.0\r\n"],
+                    'https' => ['timeout' => 5, 'header' => "User-Agent: AIU-Hackathon-QR/1.0\r\n"],
+                ]);
+                $img = @file_get_contents($endpoint, false, $ctx);
+                return $img !== false ? $img : null;
+            } catch (\Throwable $e) {
+                return null;
+            }
+        }
+    );
+
+    abort_if($png === null, 503, 'QR generation upstream is temporarily unavailable.');
+
+    return response($png, 200, [
+        'Content-Type' => 'image/png',
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->name('attendance.qr-image')->where('token', '[A-Za-z0-9]+');
+
 Route::get('/login', ParticipantLogin::class)
     ->middleware('guest')
     ->name('login');
