@@ -53,31 +53,47 @@ Route::get('/attendance/{token}', AttendanceCheckIn::class)
 
 // Server-rendered QR image for the attendance check-in URL.
 // Lives on the same origin so a strict CSP (default-src 'self') still allows it.
-// Cached at the file system layer so we don't hammer the upstream API.
+// Cached on disk (NOT in the cache table — MySQL utf8 columns can't hold a
+// raw PNG binary, that throws "Incorrect string value: \x89PNG").
 Route::get('/attendance-qr/{token}.png', function (string $token) {
     abort_unless(\App\Models\AttendanceSession::where('token', $token)->exists(), 404);
 
-    $cacheKey = 'attendance_qr_' . $token;
-    $png = \Illuminate\Support\Facades\Cache::remember(
-        $cacheKey,
-        now()->addDays(7),
-        function () use ($token) {
-            $url = route('attendance.check-in', $token);
-            $endpoint = 'https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=10&data=' . urlencode($url);
-            try {
-                $ctx = stream_context_create([
-                    'http' => ['timeout' => 5, 'header' => "User-Agent: AIU-Hackathon-QR/1.0\r\n"],
-                    'https' => ['timeout' => 5, 'header' => "User-Agent: AIU-Hackathon-QR/1.0\r\n"],
-                ]);
-                $img = @file_get_contents($endpoint, false, $ctx);
-                return $img !== false ? $img : null;
-            } catch (\Throwable $e) {
-                return null;
-            }
+    $diskPath = 'qr-cache/' . $token . '.png';
+    $disk = \Illuminate\Support\Facades\Storage::disk('local');
+
+    // Serve from disk if cached and fresh (≤ 7 days)
+    if ($disk->exists($diskPath) && (time() - $disk->lastModified($diskPath)) < 7 * 86400) {
+        return response($disk->get($diskPath), 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
+
+    $url = route('attendance.check-in', $token);
+    $endpoint = 'https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=10&data=' . urlencode($url);
+
+    $png = null;
+    try {
+        $ctx = stream_context_create([
+            'http' => ['timeout' => 5, 'header' => "User-Agent: AIU-Hackathon-QR/1.0\r\n"],
+            'https' => ['timeout' => 5, 'header' => "User-Agent: AIU-Hackathon-QR/1.0\r\n"],
+        ]);
+        $img = @file_get_contents($endpoint, false, $ctx);
+        if ($img !== false && strlen($img) > 100) {
+            $png = $img;
         }
-    );
+    } catch (\Throwable $e) {
+        $png = null;
+    }
 
     abort_if($png === null, 503, 'QR generation upstream is temporarily unavailable.');
+
+    // Best-effort store; if disk is unwritable, just serve without caching.
+    try {
+        $disk->put($diskPath, $png);
+    } catch (\Throwable $e) {
+        // ignore
+    }
 
     return response($png, 200, [
         'Content-Type' => 'image/png',
