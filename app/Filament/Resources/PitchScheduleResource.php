@@ -162,11 +162,11 @@ class PitchScheduleResource extends Resource
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, [
                 'Room', 'Slot #', 'Round', 'Team', 'Tagline',
-                'Scheduled start', 'Scheduled end (+10m)',
+                'Scheduled start', 'Scheduled end (+15m)',
                 'Started at', 'Ended at', 'Status',
             ]);
             foreach ($rows as $r) {
-                $end = $r->scheduled_start ? $r->scheduled_start->copy()->addMinutes(10) : null;
+                $end = $r->scheduled_start ? $r->scheduled_start->copy()->addMinutes(15) : null;
                 $status = $r->ended_at ? 'completed' : ($r->started_at ? 'live' : 'pending');
                 fputcsv($out, [
                     $r->room ? 'Room ' . $r->room : '',

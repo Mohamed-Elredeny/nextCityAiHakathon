@@ -17,10 +17,11 @@ use Illuminate\Support\Facades\DB;
  * Round 1 pitch schedule seeder.
  *
  * Distributes every team that submitted Assignment 1 across the 3 parallel
- * pitching rooms on Day 2 (Friday May 8, 2026), 9:45 → 12:30, with a 15-min
- * break at 11:00 in each room.
+ * pitching rooms on Day 2 (Friday May 8, 2026). Starts at 11:10 with a
+ * 15-minute slot per team and no break — the actual schedule used on the
+ * day was compressed because earlier sessions overran.
  *
- * Per-team slot: 10 minutes (5 pitch + 3 Q&A + 2 changeover).
+ * Per-team slot: 15 minutes (pitch + Q&A + changeover).
  *
  * Re-running this seeder wipes the existing round1 pitch schedule and
  * regenerates it — safe to run as many times as needed.
@@ -32,10 +33,11 @@ class Round1PitchScheduleSeeder extends Seeder
 {
     /** Pitching day kick-off */
     private const PITCH_DATE = '2026-05-08';
-    private const START_TIME = '09:45';
-    private const BREAK_START = '11:00';
+    private const START_TIME = '11:10';
+    private const SLOT_DURATION_MIN = 15;
+    /** Set to a non-null 'HH:MM' to insert a break at that time (e.g. '12:30'). */
+    private const BREAK_START = null;
     private const BREAK_DURATION_MIN = 15;
-    private const SLOT_DURATION_MIN = 10;
 
     public function run(): void
     {
@@ -132,14 +134,17 @@ class Round1PitchScheduleSeeder extends Seeder
     private function scheduleRoom(string $room, \Illuminate\Support\Collection $teams): void
     {
         $current = CarbonImmutable::parse(self::PITCH_DATE . ' ' . self::START_TIME);
-        $breakStart = CarbonImmutable::parse(self::PITCH_DATE . ' ' . self::BREAK_START);
-        $breakEnd = $breakStart->addMinutes(self::BREAK_DURATION_MIN);
+        $breakStart = self::BREAK_START
+            ? CarbonImmutable::parse(self::PITCH_DATE . ' ' . self::BREAK_START)
+            : null;
+        $breakEnd = $breakStart?->addMinutes(self::BREAK_DURATION_MIN);
 
         foreach ($teams as $index => $team) {
             $slotEnd = $current->addMinutes(self::SLOT_DURATION_MIN);
 
-            // If this slot would overlap the break, push forward to after it
-            if ($current->lt($breakEnd) && $slotEnd->gt($breakStart)) {
+            // If a break is configured and this slot would overlap it, push
+            // the slot to start after the break.
+            if ($breakStart && $breakEnd && $current->lt($breakEnd) && $slotEnd->gt($breakStart)) {
                 $current = $breakEnd;
                 $slotEnd = $current->addMinutes(self::SLOT_DURATION_MIN);
             }
