@@ -117,4 +117,44 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return $this->hasMany(\App\Models\TeamApplication::class);
     }
+
+    public function attendances()
+    {
+        return $this->hasMany(\App\Models\Attendance::class);
+    }
+
+    /**
+     * Profile must be complete (basic fields filled) AND have a profile photo
+     * before a participant is allowed to check in for attendance.
+     */
+    public function isProfileComplete(): bool
+    {
+        return filled($this->name)
+            && filled($this->phone)
+            && filled($this->institution)
+            && filled($this->national_id)
+            && filled($this->avatar_path);
+    }
+
+    /**
+     * Returns the list of fields that are still missing for attendance gating.
+     */
+    public function missingProfileFields(): array
+    {
+        $required = [
+            'name' => 'Full name',
+            'phone' => 'Phone number',
+            'institution' => 'Institution / University',
+            'national_id' => 'National ID',
+            'avatar_path' => 'Profile photo',
+        ];
+
+        $missing = [];
+        foreach ($required as $field => $label) {
+            if (blank($this->{$field})) {
+                $missing[$field] = $label;
+            }
+        }
+        return $missing;
+    }
 }

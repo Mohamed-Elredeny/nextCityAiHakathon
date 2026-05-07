@@ -45,7 +45,7 @@
             <p class="text-aiu-ink-400 text-sm tabular-nums">{{ $serverNow->format('Y-m-d H:i:s') }}</p>
         </div>
 
-        <div class="space-y-2.5 h-full overflow-y-auto pb-24">
+        <div class="space-y-2.5 h-full overflow-y-auto pb-4">
             @forelse ($teams as $i => $team)
                 @php $isFirst = $i === 0; $isPodium = $i < 3; @endphp
                 <div class="row-anim grid grid-cols-12 items-center gap-4 px-6 py-4 rounded-2xl card-3d
@@ -94,7 +94,143 @@
         </div>
     </main>
 
-    <footer class="absolute bottom-0 left-0 right-0 py-3 px-12 bg-white/85 backdrop-blur-md border-t border-aiu-line flex items-center justify-between text-xs text-aiu-ink-600">
+    @if ($showcaseTeams->isNotEmpty())
+        @php
+            // Duplicate the list once so the CSS marquee can loop seamlessly.
+            $ribbon = $showcaseTeams->concat($showcaseTeams);
+        @endphp
+        <section class="border-t border-aiu-line bg-gradient-to-r from-aiu-ink-50 via-white to-aiu-ink-50 py-3 overflow-hidden">
+            <div class="flex items-center gap-4 px-12 mb-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-aiu-red animate-pulse"></span>
+                <p class="text-[10px] uppercase tracking-[0.3em] text-aiu-red font-bold">Meet the Teams</p>
+                <p class="text-[11px] text-aiu-ink-400">{{ $showcaseTeams->count() }} {{ \Illuminate\Support\Str::plural('team', $showcaseTeams->count()) }}</p>
+            </div>
+            <div class="bs-marquee">
+                <div class="bs-marquee__track">
+                    @foreach ($ribbon as $team)
+                        <div class="bs-marquee__team">
+                            <div class="bs-marquee__logo">
+                                <img src="{{ $team->logo_url }}" alt="{{ $team->name }}" loading="lazy">
+                            </div>
+                            <div class="bs-marquee__meta">
+                                <p class="bs-marquee__name">{{ $team->name }}</p>
+                                @if ($team->tagline)
+                                    <p class="bs-marquee__tag">{{ \Illuminate\Support\Str::limit($team->tagline, 60) }}</p>
+                                @endif
+                            </div>
+                            <div class="bs-marquee__members">
+                                @foreach ($team->members as $member)
+                                    <div class="bs-marquee__avatar" title="{{ $member->name }}">
+                                        @if ($member->avatar_path)
+                                            <img src="{{ $member->avatar_url }}" alt="{{ $member->name }}" loading="lazy">
+                                        @else
+                                            <span>{{ $member->initials }}</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="bs-marquee__sep"></div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <style>
+            .bs-marquee { width: 100%; overflow: hidden; }
+            .bs-marquee__track {
+                display: inline-flex;
+                align-items: center;
+                gap: 0;
+                white-space: nowrap;
+                animation: bs-marquee-scroll 60s linear infinite;
+                will-change: transform;
+            }
+            .bs-marquee:hover .bs-marquee__track { animation-play-state: paused; }
+            .bs-marquee__team {
+                display: inline-flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 0 0.75rem;
+                flex-shrink: 0;
+            }
+            .bs-marquee__logo {
+                width: 64px; height: 64px;
+                border-radius: 14px;
+                background: #fff;
+                box-shadow: 0 2px 6px rgba(0,0,0,.08);
+                display: flex; align-items: center; justify-content: center;
+                padding: 6px;
+                flex-shrink: 0;
+            }
+            .bs-marquee__logo img {
+                max-width: 100%; max-height: 100%;
+                object-fit: contain;
+            }
+            .bs-marquee__meta {
+                min-width: 0;
+                max-width: 200px;
+            }
+            .bs-marquee__name {
+                font-family: 'Ubuntu', system-ui, sans-serif;
+                font-weight: 700;
+                font-size: 1rem;
+                color: #1a1a1a;
+                line-height: 1.1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .bs-marquee__tag {
+                font-size: 0.7rem;
+                color: #6b7280;
+                margin-top: 2px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .bs-marquee__members {
+                display: inline-flex;
+                align-items: center;
+            }
+            .bs-marquee__members > .bs-marquee__avatar + .bs-marquee__avatar {
+                margin-left: -10px;
+            }
+            .bs-marquee__avatar {
+                width: 44px; height: 44px;
+                border-radius: 9999px;
+                background: #e5e7eb;
+                box-shadow: 0 0 0 3px #fff;
+                overflow: hidden;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            .bs-marquee__avatar img {
+                width: 100%; height: 100%;
+                object-fit: cover;
+            }
+            .bs-marquee__avatar span {
+                font-family: 'Ubuntu', sans-serif;
+                font-weight: 700;
+                font-size: 0.75rem;
+                color: #6b7280;
+            }
+            .bs-marquee__sep {
+                width: 1px;
+                height: 44px;
+                background: linear-gradient(180deg, transparent, #d1d5db, transparent);
+                margin: 0 0.5rem;
+            }
+            @keyframes bs-marquee-scroll {
+                0%   { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+            }
+        </style>
+    @endif
+
+    <footer class="py-3 px-12 bg-white/85 backdrop-blur-md border-t border-aiu-line flex items-center justify-between text-xs text-aiu-ink-600">
         <p>{{ $edition?->name }} · ACIE</p>
         <p class="flex items-center gap-2">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>

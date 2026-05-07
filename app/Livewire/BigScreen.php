@@ -46,12 +46,24 @@ class BigScreen extends Component
             ->orderByDesc('started_at')
             ->first();
 
+        // Showcase ribbon — every team in the active edition with their members.
+        $showcaseTeams = $edition
+            ? Team::query()
+                ->where('edition_id', $edition->id)
+                ->where('status', 'active')
+                ->whereNotNull('logo_path')
+                ->with(['members' => fn ($q) => $q->orderBy('users.name')])
+                ->orderBy('name')
+                ->get()
+            : collect();
+
         return view('livewire.big-screen', [
             'teams' => $teams,
             'edition' => $edition,
             'currentPhase' => $currentPhase,
             'nowPitching' => $nowPitching,
             'serverNow' => Carbon::now(),
+            'showcaseTeams' => $showcaseTeams,
         ])->layout('components.layouts.bigscreen');
     }
 

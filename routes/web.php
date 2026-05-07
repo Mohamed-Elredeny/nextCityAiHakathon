@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\TeamAssetController;
+use App\Livewire\AttendanceCheckIn;
 use App\Livewire\BigScreen;
 use App\Livewire\CommunityHub;
 use App\Livewire\CommunityPostView;
@@ -42,6 +43,12 @@ Route::get('/vote', PeoplesChoiceVote::class)->name('vote');
 Route::get('/vote/qr', function () {
     return view('vote-qr', ['voteUrl' => url('/vote')]);
 })->name('vote.qr');
+
+// Public attendance check-in (QR landing). Auth is enforced inside the
+// Livewire component itself so unauthenticated users get redirected to /login
+// with the intended URL preserved.
+Route::get('/attendance/{token}', AttendanceCheckIn::class)
+    ->name('attendance.check-in');
 
 Route::get('/login', ParticipantLogin::class)
     ->middleware('guest')

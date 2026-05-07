@@ -41,6 +41,14 @@ class ParticipantLogin extends Component
         // to /login as a guest), Laravel would send a judge back to /admin —
         // a panel they have no permission for.
         $user = Auth::user();
+
+        // Honor an explicit attendance check-in redirect (QR landing flow).
+        $attendanceRedirect = request()->session()->pull('attendance_redirect');
+        if ($attendanceRedirect) {
+            request()->session()->forget('url.intended');
+            return redirect($attendanceRedirect);
+        }
+
         $target = match (true) {
             $user->hasRole('super_admin') => '/admin',
             $user->hasRole('judge')       => '/judge',
