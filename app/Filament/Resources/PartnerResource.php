@@ -64,6 +64,7 @@ class PartnerResource extends Resource
                         ->disk('public')
                         ->directory('avatars')
                         ->imageResizeMode('contain')
+                        ->imagePreviewHeight('120')
                         ->maxSize(2048),
                 ]),
 
@@ -87,6 +88,7 @@ class PartnerResource extends Resource
                         ->disk('public')
                         ->directory('partner-logos')
                         ->imageResizeMode('contain')
+                        ->imagePreviewHeight('160')
                         ->maxSize(1024)
                         ->columnSpanFull()
                         ->helperText('Upload the COMPANY LOGO here — this is the image that appears in the "Our Partners" section on the public landing page and the marquee.'),
