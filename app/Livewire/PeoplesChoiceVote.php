@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\Edition;
 use App\Models\PeoplesChoiceVote as VoteModel;
 use App\Models\Team;
+use App\Models\VoterIpBlock;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
@@ -113,6 +114,33 @@ class PeoplesChoiceVote extends Component
     public function vote(int $teamId): void
     {
         $this->message = null;
+        $ip = (string) request()->ip();
+        $ua = (string) request()->userAgent();
+
+        // ───── ANTI-SPAM LAYER 0 · hard IP block ─────
+        // If this IP has already exceeded the attempt threshold in the
+        // sliding window, reject every subsequent attempt for the full
+        // BLOCK_DURATION_HOURS without even running the other layers.
+        $existingBlock = VoterIpBlock::activeBlockFor($ip);
+        if ($existingBlock) {
+            $this->logRejection($teamId, 'ip_hard_blocked', [
+                'blocked_until' => $existingBlock->blocked_until?->toDateTimeString(),
+                'attempt_count' => $existingBlock->attempt_count,
+            ]);
+            $this->message = 'This network has been temporarily blocked from voting due to suspicious activity.';
+            return;
+        }
+
+        // Every attempt from here on counts toward the per-IP limit.
+        // recordAttempt() auto-blocks the IP once it crosses ATTEMPT_LIMIT.
+        $row = VoterIpBlock::recordAttempt($ip, $ua);
+        if ($row->isBlocked()) {
+            $this->logRejection($teamId, 'ip_just_blocked', [
+                'attempt_count' => $row->attempt_count,
+            ]);
+            $this->message = 'Too many attempts from this network. Voting is blocked for the next 24 hours.';
+            return;
+        }
 
         // ───── ANTI-SPAM LAYER 1 · honeypot ─────
         // Real users never see this field; bots fill in every text input
