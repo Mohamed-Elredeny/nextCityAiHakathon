@@ -73,13 +73,16 @@ class RestrictedAwardVote extends Component
             return;
         }
 
-        // Team must belong to the active edition and be active.
+        // Team must belong to the active edition, be active, AND be a
+        // finalist (Top 8). Defense in depth: the UI already filters to
+        // finalists, but a tampered request must still be rejected.
         $team = Team::where('id', $teamId)
             ->where('edition_id', $edition->id)
             ->where('status', 'active')
+            ->where('is_finalist', true)
             ->first();
         if (!$team) {
-            $this->error = 'Selected team is not eligible.';
+            $this->error = 'Selected team is not eligible (not a finalist).';
             return;
         }
 
@@ -140,10 +143,15 @@ class RestrictedAwardVote extends Component
             ? $user->teams()->pluck('teams.id')->all()
             : [];
 
+        // Restricted-award voting only applies to teams that made it to the
+        // finals (Top 8). Voting opens AFTER the finals presentations, so by
+        // then the finalist set is final. Showing non-finalists would let
+        // users waste votes on teams that can't win the award.
         $teams = $edition
             ? Team::query()
                 ->where('edition_id', $edition->id)
                 ->where('status', 'active')
+                ->where('is_finalist', true)
                 ->whereNotIn('id', $ownTeamIds)
                 ->with('theme')
                 ->orderBy('name')
