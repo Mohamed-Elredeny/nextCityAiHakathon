@@ -3,6 +3,41 @@
 # Hardened for cPanel / shared hosting. Pair with the root .htaccess.
 # =============================================================================
 
+# -----------------------------------------------------------------------------
+# PHP runtime overrides — only honored under mod_php (Apache module).
+# Under PHP-FPM/CGI/suPHP these IfModule guards collapse to no-ops, so
+# .user.ini remains the source of truth there. MultiPHP INI Editor is the
+# definitive override on cPanel; this is just defense-in-depth.
+# -----------------------------------------------------------------------------
+<IfModule mod_php.c>
+    php_value upload_max_filesize 128M
+    php_value post_max_size       128M
+    php_value memory_limit        256M
+    php_value max_execution_time  120
+    php_value max_input_time      120
+</IfModule>
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 128M
+    php_value post_max_size       128M
+    php_value memory_limit        256M
+    php_value max_execution_time  120
+    php_value max_input_time      120
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 128M
+    php_value post_max_size       128M
+    php_value memory_limit        256M
+    php_value max_execution_time  120
+    php_value max_input_time      120
+</IfModule>
+<IfModule lsapi_module>
+    php_value upload_max_filesize 128M
+    php_value post_max_size       128M
+    php_value memory_limit        256M
+    php_value max_execution_time  120
+    php_value max_input_time      120
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
