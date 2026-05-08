@@ -152,9 +152,9 @@
                             <a @if ($href) href="{{ $href }}" target="_blank" rel="noopener" @else href="javascript:void(0)" @endif
                                class="group flex flex-col items-center gap-3 transition"
                                title="{{ $orgName }} — {{ $partner->name }}">
-                                <div class="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center bg-white rounded-full shadow-md ring-2 ring-aiu-line/40 overflow-hidden group-hover:shadow-xl group-hover:ring-aiu-red/40 group-hover:-translate-y-1 transition">
+                                <div class="w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center bg-white rounded-full shadow-md ring-2 ring-aiu-line/40 p-6 group-hover:shadow-xl group-hover:ring-aiu-red/40 group-hover:-translate-y-1 transition">
                                     @if ($partnerLogo)
-                                        <img src="{{ $partnerLogo }}" alt="{{ $orgName }}" class="w-full h-full object-contain">
+                                        <img src="{{ $partnerLogo }}" alt="{{ $orgName }}" class="max-w-full max-h-full object-contain">
                                     @else
                                         <span class="font-heading font-bold text-3xl text-aiu-red tracking-wide">
                                             {{ \Illuminate\Support\Str::upper($partner->org_initials) }}
