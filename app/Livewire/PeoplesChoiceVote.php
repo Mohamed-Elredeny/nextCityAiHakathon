@@ -40,6 +40,9 @@ class PeoplesChoiceVote extends Component
     public bool $votingPaused = false;
     public bool $voteRequiresLogin = false;
 
+    /** Browser-generated device fingerprint (SHA-256 hex, 64 chars). */
+    public string $deviceFingerprint = '';
+
     // Guest fields
     public string $voterName = '';
     public string $voterEmail = '';
@@ -140,6 +143,23 @@ class PeoplesChoiceVote extends Component
             $this->logRejection($teamId, 'login_required');
             $this->message = 'Voting now requires a registered account. Please sign in to continue.';
             return;
+        }
+
+        // ───── ANTI-SPAM LAYER · device fingerprint ─────
+        // Browser-generated fingerprint (canvas + screen + timezone +
+        // hardware → SHA-256). Stable across IP changes and cookie
+        // clearing — defeats simple IP rotation since the device's
+        // hardware/screen rarely changes.
+        $fp = preg_replace('/[^a-f0-9]/', '', mb_strtolower($this->deviceFingerprint));
+        if (strlen($fp) === 64) {
+            $alreadyVoted = VoteModel::where('device_fingerprint', $fp)->exists();
+            if ($alreadyVoted) {
+                $this->logRejection($teamId, 'fingerprint_already_voted', [
+                    'fp_prefix' => substr($fp, 0, 12),
+                ]);
+                $this->message = 'This device has already voted.';
+                return;
+            }
         }
 
         // ───── ANTI-SPAM LAYER 0 · hard IP block ─────
@@ -243,6 +263,7 @@ class PeoplesChoiceVote extends Component
         }
 
         $token = (string) Str::uuid();
+        $fp = preg_replace('/[^a-f0-9]/', '', mb_strtolower($this->deviceFingerprint));
         $vote = VoteModel::create([
             'user_id'     => Auth::id(),
             'team_id'     => $teamId,
@@ -251,6 +272,7 @@ class PeoplesChoiceVote extends Component
             'voter_email' => Auth::check() ? null : strtolower(trim($this->voterEmail)),
             'voter_token' => $token,
             'ip_address'  => request()->ip(),
+            'device_fingerprint' => strlen($fp) === 64 ? $fp : null,
         ]);
 
         // Set a long-lived cookie so this browser is recognized on return visits
@@ -291,6 +313,26 @@ class PeoplesChoiceVote extends Component
         }
 
         $this->message = 'Thanks for voting!';
+    }
+
+    /**
+     * Called automatically when the JS-generated fingerprint reaches the
+     * component for the first time. If we already have a vote for this
+     * device, lock the UI to it.
+     */
+    public function updatedDeviceFingerprint(string $value): void
+    {
+        if ($this->myVoteTeamId) {
+            return; // already locked, nothing to do
+        }
+        $fp = preg_replace('/[^a-f0-9]/', '', mb_strtolower($value));
+        if (strlen($fp) !== 64) {
+            return;
+        }
+        $vote = VoteModel::where('device_fingerprint', $fp)->with('team')->first();
+        if ($vote) {
+            $this->lockToVote($vote);
+        }
     }
 
     /**

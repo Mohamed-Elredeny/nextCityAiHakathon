@@ -10,6 +10,7 @@ class PeoplesChoiceVote extends Model
     protected $fillable = [
         'user_id', 'team_id', 'voted_at',
         'voter_name', 'voter_email', 'voter_token', 'ip_address',
+        'device_fingerprint',
     ];
 
     protected $casts = [

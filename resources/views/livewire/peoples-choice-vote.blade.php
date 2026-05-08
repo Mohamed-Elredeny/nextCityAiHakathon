@@ -1,9 +1,91 @@
-<div class="max-w-7xl mx-auto px-6 py-12">
+<div class="max-w-7xl mx-auto px-6 py-12"
+     x-data="voteFingerprint()"
+     x-init="init()">
+
     {{-- Page-wide honeypot: any bot scraping the form will eagerly fill this. --}}
     <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
         <label>Website (leave blank)</label>
         <input type="text" wire:model="hp_website" tabindex="-1" autocomplete="off">
     </div>
+
+    {{-- Browser-side device fingerprint. Stable across IP changes. Stored in
+         localStorage so even cookie-clearing doesn't generate a fresh ID. --}}
+    <input type="hidden" wire:model.live="deviceFingerprint" :value="fp">
+
+    <script>
+        function voteFingerprint() {
+            return {
+                fp: '',
+                async init() {
+                    try {
+                        const stored = localStorage.getItem('aiu_vote_fp');
+                        if (stored && /^[a-f0-9]{64}$/.test(stored)) {
+                            this.fp = stored;
+                            this.$dispatch('input'); // sync to Livewire
+                            return;
+                        }
+                        const generated = await this.generate();
+                        this.fp = generated;
+                        try { localStorage.setItem('aiu_vote_fp', generated); } catch (e) {}
+                        this.$dispatch('input');
+                    } catch (e) {
+                        // Fingerprinting failed — server still has IP/cookie checks
+                    }
+                },
+                async generate() {
+                    // Canvas fingerprint
+                    let canvasData = '';
+                    try {
+                        const c = document.createElement('canvas');
+                        c.width = 240; c.height = 60;
+                        const ctx = c.getContext('2d');
+                        ctx.textBaseline = 'top';
+                        ctx.font = '14px Arial';
+                        ctx.fillStyle = '#f60';
+                        ctx.fillRect(125, 1, 62, 20);
+                        ctx.fillStyle = '#069';
+                        ctx.fillText('AIU Hackathon \u{1F3AF}', 2, 15);
+                        ctx.fillStyle = 'rgba(102,204,0,0.7)';
+                        ctx.fillText('AIU Hackathon \u{1F3AF}', 4, 17);
+                        canvasData = c.toDataURL();
+                    } catch (e) {}
+
+                    // WebGL renderer (vendor-specific GPU info)
+                    let gpu = '';
+                    try {
+                        const gl = document.createElement('canvas').getContext('webgl');
+                        if (gl) {
+                            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                            if (debugInfo) {
+                                gpu = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) + '|'
+                                    + gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                            }
+                        }
+                    } catch (e) {}
+
+                    const components = [
+                        navigator.userAgent || '',
+                        navigator.language || '',
+                        navigator.languages ? navigator.languages.join(',') : '',
+                        navigator.platform || '',
+                        screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+                        new Date().getTimezoneOffset(),
+                        Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+                        navigator.hardwareConcurrency || 0,
+                        navigator.deviceMemory || 0,
+                        navigator.maxTouchPoints || 0,
+                        canvasData,
+                        gpu,
+                    ].join('||');
+
+                    const buf = new TextEncoder().encode(components);
+                    const hash = await crypto.subtle.digest('SHA-256', buf);
+                    return Array.from(new Uint8Array(hash))
+                        .map(b => b.toString(16).padStart(2, '0')).join('');
+                },
+            };
+        }
+    </script>
 
     <header class="mb-8 text-center">
         <p class="inline-flex items-center gap-2 px-3 py-1 rounded-full chip-3d
