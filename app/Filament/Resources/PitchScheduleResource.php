@@ -97,15 +97,32 @@ class PitchScheduleResource extends Resource
                             ->title("Generated {$count} slots")->success()->send();
                     }),
                 Tables\Actions\Action::make('promoteFinalists')
-                    ->label('Promote top 5 to finals')
+                    ->label('Promote Top 8 to Finals')
                     ->icon('heroicon-o-trophy')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->action(function () {
-                        $ids = app(PitchScheduleService::class)->promoteFinalists(Edition::active());
+                    ->modalHeading('Promote finalists from Round 1')
+                    ->modalDescription('Pulls the highest-scoring teams from Round 1 and marks them as finalists. Optionally carries over each team\'s Round 1 judge assignments to Finals so the same judges continue scoring them.')
+                    ->form([
+                        Forms\Components\TextInput::make('count')
+                            ->label('Number of finalists')
+                            ->numeric()->minValue(1)->maxValue(20)
+                            ->default(8)
+                            ->required(),
+                        Forms\Components\Toggle::make('carry_judges')
+                            ->label('Carry Round 1 judge assignments to Finals')
+                            ->default(true)
+                            ->helperText('Same judges who scored the team in Round 1 will be assigned to score them in Finals.'),
+                    ])
+                    ->action(function (array $data) {
+                        $result = app(PitchScheduleService::class)->promoteFinalists(
+                            Edition::active(),
+                            (int) $data['count'],
+                            (bool) $data['carry_judges'],
+                        );
                         \Filament\Notifications\Notification::make()
                             ->title('Finalists promoted')
-                            ->body(count($ids) . ' team(s) marked as finalists.')
+                            ->body("{$result['count']} team(s) marked as finalists. {$result['assignments_copied']} judge assignment(s) copied to Finals.")
                             ->success()->send();
                     }),
                 Tables\Actions\Action::make('export_csv')

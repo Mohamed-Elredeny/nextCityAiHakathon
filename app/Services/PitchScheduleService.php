@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Edition;
+use App\Models\JudgeAssignment;
 use App\Models\PitchSchedule;
 use App\Models\Score;
 use App\Models\Team;
@@ -81,9 +82,19 @@ class PitchScheduleService
         $slot->update(['ended_at' => Carbon::now()]);
     }
 
-    public function promoteFinalists(Edition $edition, int $count = 5): array
-    {
-        $aggregates = Score::query()
+    /**
+     * Marks the top N teams from Round 1 as finalists. Optionally carries
+     * over each finalist's Round 1 judge assignments to the Finals round so
+     * the same judges score the same teams in the second pitch.
+     *
+     * Returns a structured summary the caller can display to the admin.
+     */
+    public function promoteFinalists(
+        Edition $edition,
+        int $count = 8,
+        bool $carryJudgesToFinals = true,
+    ): array {
+        $finalistIds = Score::query()
             ->whereHas('team', fn ($q) => $q->where('edition_id', $edition->id))
             ->where('round', 'round1')
             ->whereNotNull('locked_at')
@@ -94,11 +105,49 @@ class PitchScheduleService
             ->pluck('team_id')
             ->all();
 
-        DB::transaction(function () use ($edition, $aggregates) {
+        $assignmentsCopied = 0;
+
+        DB::transaction(function () use ($edition, $finalistIds, $carryJudgesToFinals, &$assignmentsCopied) {
+            // Reset, then mark new finalists. Keeping this two-step so a
+            // re-run with a different count doesn't leave stale flags.
             Team::where('edition_id', $edition->id)->update(['is_finalist' => false]);
-            Team::whereIn('id', $aggregates)->update(['is_finalist' => true]);
+            Team::whereIn('id', $finalistIds)->update(['is_finalist' => true]);
+
+            if (!$carryJudgesToFinals || empty($finalistIds)) {
+                return;
+            }
+
+            // Carry each finalist's round1 assignments forward to finals.
+            // We pull the existing pairs (judge_id, team_id) and upsert
+            // them as round=finals, defaulting recused=false on the new row.
+            $round1 = JudgeAssignment::query()
+                ->whereIn('team_id', $finalistIds)
+                ->where('round', 'round1')
+                ->where('recused', false)
+                ->get(['judge_id', 'team_id']);
+
+            foreach ($round1 as $row) {
+                $exists = JudgeAssignment::where([
+                    'judge_id' => $row->judge_id,
+                    'team_id'  => $row->team_id,
+                    'round'    => 'finals',
+                ])->exists();
+                if ($exists) continue;
+
+                JudgeAssignment::create([
+                    'judge_id' => $row->judge_id,
+                    'team_id'  => $row->team_id,
+                    'round'    => 'finals',
+                    'recused'  => false,
+                ]);
+                $assignmentsCopied++;
+            }
         });
 
-        return $aggregates;
+        return [
+            'finalist_ids'       => $finalistIds,
+            'count'              => count($finalistIds),
+            'assignments_copied' => $assignmentsCopied,
+        ];
     }
 }
