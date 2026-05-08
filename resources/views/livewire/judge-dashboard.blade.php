@@ -144,7 +144,10 @@
 
                     <fieldset @if($isLocked) disabled @endif class="{{ $isLocked ? 'opacity-70' : '' }} space-y-5">
                         @foreach ($weights as $criterion => $weight)
-                            @php $current = (int) round((float) $scores[$criterion]); @endphp
+                            @php
+                                $raw = $scores[$criterion] ?? null;
+                                $current = $raw === null ? null : (int) round((float) $raw);
+                            @endphp
                             <div>
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="text-sm font-bold text-aiu-ink-900">
@@ -152,11 +155,11 @@
                                         <span class="ml-2 text-[10px] uppercase tracking-wider text-aiu-red font-bold">{{ ($weight * 100) }}%</span>
                                     </label>
                                     <span class="font-mono text-lg font-bold text-aiu-red tabular-nums w-12 text-right">
-                                        {{ $current ?: '—' }}
+                                        {{ $current === null ? '—' : $current }}
                                     </span>
                                 </div>
-                                <div class="grid grid-cols-10 gap-1.5">
-                                    @for ($n = 1; $n <= 10; $n++)
+                                <div class="grid grid-cols-11 gap-1.5">
+                                    @for ($n = 0; $n <= 10; $n++)
                                         <button type="button"
                                                 wire:click="$set('scores.{{ $criterion }}', {{ $n }})"
                                                 @if($isLocked) disabled @endif

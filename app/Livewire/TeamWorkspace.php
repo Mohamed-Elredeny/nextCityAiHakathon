@@ -291,7 +291,7 @@ class TeamWorkspace extends Component
         // half-typed values throughout the hackathon. Strict URL/format
         // validation runs in SubmissionService::submit() at lock-in time.
         $this->validate([
-            'reportPdf' => 'nullable|file|mimes:pdf|max:51200',
+            'reportPdf' => 'nullable|file|mimes:pdf|max:102400',
             'slidesUrl' => 'nullable|string|max:500',
             'repoUrl' => 'nullable|string|max:500',
             'videoUrl' => 'nullable|string|max:500',

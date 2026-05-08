@@ -21,7 +21,7 @@ class JudgeDashboard extends Component
     public ?int $themeFilter = null;
     public string $teamSearch = '';
     public ?int $selectedTeamId = null;
-    public array $scores = ['business_viability' => 0, 'technical_feasibility' => 0, 'impact_relevance' => 0, 'team_skills' => 0, 'presentation_skills' => 0];
+    public array $scores = ['business_viability' => null, 'technical_feasibility' => null, 'impact_relevance' => null, 'team_skills' => null, 'presentation_skills' => null];
     public string $comment = '';
     public string $newMessage = '';
     public ?string $errorMessage = null;
@@ -73,7 +73,7 @@ class JudgeDashboard extends Component
         ])->first();
         if ($existing) {
             foreach (array_keys(Score::WEIGHTS) as $c) {
-                $this->scores[$c] = (float) ($existing->{$c} ?? 0);
+                $this->scores[$c] = $existing->{$c} === null ? null : (float) $existing->{$c};
             }
             $this->comment = (string) $existing->comment;
         } else {
@@ -83,7 +83,7 @@ class JudgeDashboard extends Component
 
     protected function resetScoreForm(): void
     {
-        $this->scores = ['business_viability' => 0, 'technical_feasibility' => 0, 'impact_relevance' => 0, 'team_skills' => 0, 'presentation_skills' => 0];
+        $this->scores = ['business_viability' => null, 'technical_feasibility' => null, 'impact_relevance' => null, 'team_skills' => null, 'presentation_skills' => null];
         $this->comment = '';
     }
 
@@ -209,10 +209,13 @@ class JudgeDashboard extends Component
             ->get()
             ->keyBy('team_id');
 
-        $teams = $assignments->map(function ($a) use ($myScores) {
-            $a->team->setAttribute('my_score', $myScores->get($a->team_id));
-            return $a->team;
-        });
+        $teams = $assignments
+            ->filter(fn ($a) => $a->team !== null)
+            ->map(function ($a) use ($myScores) {
+                $a->team->setAttribute('my_score', $myScores->get($a->team_id));
+                return $a->team;
+            })
+            ->values();
 
         $availableThemes = $teams
             ->filter(fn ($t) => $t->theme)

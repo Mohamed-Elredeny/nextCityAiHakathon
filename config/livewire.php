@@ -13,9 +13,9 @@ return [
     'temporary_file_upload' => [
         'disk' => null,
         // Default Livewire cap is 12MB which is too small for the hackathon's
-        // multi-page solution PDFs. Bumped to 50MB. Server-side limits in
+        // multi-page solution PDFs. Bumped to 100MB. Server-side limits in
         // public/.user.ini and cPanel MultiPHP INI Editor must match.
-        'rules' => ['required', 'file', 'max:51200'],
+        'rules' => ['required', 'file', 'max:102400'],
         'directory' => null,
         'middleware' => null,
         'preview_mimes' => [

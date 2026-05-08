@@ -44,7 +44,9 @@ class ScoringService
 
         foreach (Score::WEIGHTS as $criterion => $_) {
             if (array_key_exists($criterion, $scores)) {
-                $score->{$criterion} = max(0, min(10, (float) $scores[$criterion]));
+                $score->{$criterion} = $scores[$criterion] === null
+                    ? null
+                    : max(0, min(10, (float) $scores[$criterion]));
             }
         }
         $score->comment = $comment;
@@ -71,14 +73,10 @@ class ScoringService
                 throw new RuntimeException('This score is already locked.');
             }
             foreach (Score::WEIGHTS as $criterion => $_) {
-                if (!array_key_exists($criterion, $scores)) {
-                    throw new RuntimeException("Missing score for criterion: {$criterion}");
+                if (!array_key_exists($criterion, $scores) || $scores[$criterion] === null) {
+                    throw new RuntimeException("Please rate every criterion (0–10) before locking. Missing: " . str_replace('_', ' ', $criterion) . '.');
                 }
-                $value = max(0, min(10, (float) $scores[$criterion]));
-                if ($value <= 0) {
-                    throw new RuntimeException("Please rate every criterion (1–10) before locking. Missing: " . str_replace('_', ' ', $criterion) . '.');
-                }
-                $score->{$criterion} = $value;
+                $score->{$criterion} = max(0, min(10, (float) $scores[$criterion]));
             }
             $score->comment = $comment;
             $score->weighted_total = $score->calculateWeightedTotal();
