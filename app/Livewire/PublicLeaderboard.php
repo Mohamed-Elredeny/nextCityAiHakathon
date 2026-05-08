@@ -78,13 +78,28 @@ class PublicLeaderboard extends Component
             ->with('judge:id,name,institution')
             ->get();
 
-        // Collect every distinct judge, ordered by name
+        // Collect every distinct judge, ordered by name. Used by the expanded
+        // detail layout's per-judge column ordering reference.
         $judges = $allScores->pluck('judge')->filter()->unique('id')->sortBy('name')->values();
 
         // Build a fast lookup: scoreLookup[teamId][judgeId] = Score
         $scoreLookup = [];
         foreach ($allScores as $s) {
             $scoreLookup[$s->team_id][$s->judge_id] = $s;
+        }
+
+        // Per-team list of judges who have *locked* a score for THIS team.
+        // The leaderboard renders only these for each team — judges who didn't
+        // judge this team (or haven't locked yet) are hidden, since the
+        // assignment matrix is sparse.
+        $teamJudges = [];
+        foreach ($allScores->groupBy('team_id') as $teamId => $teamScores) {
+            $teamJudges[$teamId] = $teamScores
+                ->pluck('judge')
+                ->filter()
+                ->unique('id')
+                ->sortBy('name')
+                ->values();
         }
 
         // Showcase ribbon — every active team in the edition with their members.
@@ -125,6 +140,7 @@ class PublicLeaderboard extends Component
             'nextDeadline' => $nextDeadline,
             'serverNow' => Carbon::now(),
             'judges' => $judges,
+            'teamJudges' => $teamJudges,
             'scoreLookup' => $scoreLookup,
             'showcaseTeams' => $showcaseTeams,
             'partners' => $partners,

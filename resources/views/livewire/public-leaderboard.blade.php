@@ -403,12 +403,10 @@
                                 </th>
                                 <th class="px-3 sm:px-4 py-4 text-right text-[10px] uppercase tracking-[0.18em] text-aiu-red font-bold min-w-[90px] sm:min-w-[120px] border-l-2 border-aiu-red/30">Final</th>
 
-                                @foreach ($judges as $i => $judge)
-                                    <th class="hidden lg:table-cell px-3 py-4 text-center text-[10px] uppercase tracking-wider text-aiu-ink-700 font-bold min-w-[120px] border-l border-aiu-line/60 {{ $loop->first ? 'border-l-2 border-aiu-red/30' : '' }}"
-                                        title="{{ $judge->name }}{{ $judge->institution ? ' · '.$judge->institution : '' }}">
-                                        <p class="font-heading normal-case tracking-normal text-xs text-aiu-ink-900">Judge {{ $i + 1 }}</p>
-                                    </th>
-                                @endforeach
+                                <th class="hidden lg:table-cell px-3 py-4 text-left text-[10px] uppercase tracking-[0.18em] text-aiu-ink-700 font-bold min-w-[260px] border-l-2 border-aiu-red/30">
+                                    <p class="font-heading normal-case tracking-normal text-xs text-aiu-ink-900">Judge Scores</p>
+                                    <p class="text-[9px] text-aiu-ink-400 font-semibold mt-0.5 normal-case tracking-normal">per team · locked only</p>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -417,8 +415,9 @@
                                     $isFirst = $i === 0;
                                     $isPodium = $i < 3;
                                     $isExpanded = $expandedTeamId === $team->id;
-                                    // 3 fixed cols (#, Team, Theme) + N judge cols + 3 trailing (Judges Avg, Votes, Final)
-                                    $totalCols = 6 + count($judges);
+                                    // 7 fixed cols: #, Team, Theme, Judges Avg, Votes, Final, Judge Scores
+                                    $totalCols = 7;
+                                    $myJudges = $teamJudges[$team->id] ?? collect();
                                 @endphp
                                 <tr wire:click="toggleExpanded({{ $team->id }})"
                                     class="cursor-pointer border-b border-aiu-line hover:bg-aiu-ink-50/40 transition
@@ -563,28 +562,30 @@
                                         @endif
                                     </td>
 
-                                    @foreach ($judges as $i => $judge)
-                                        @php $cell = $scoreLookup[$team->id][$judge->id] ?? null; @endphp
-                                        <td class="hidden lg:table-cell px-3 py-4 text-center align-middle border-l border-aiu-line/60 {{ $loop->first ? 'border-l-2 border-aiu-red/30' : '' }}">
-                                            <p class="text-[10px] uppercase tracking-[0.14em] text-aiu-ink-400 font-bold leading-tight">Judge {{ $i + 1 }}</p>
-                                            <p class="font-heading text-[11px] font-semibold text-aiu-ink-900 truncate leading-tight mt-0.5" title="{{ $judge->name }}{{ $judge->institution ? ' · '.$judge->institution : '' }}">
-                                                {{ $judge->name }}
-                                            </p>
-                                            @if ($cell)
-                                                <p class="font-heading text-xl font-bold text-aiu-ink-900 tabular-nums leading-none mt-1.5">
-                                                    {{ number_format((float) $cell->weighted_total, 2) }}
-                                                </p>
-                                                @if (filled($cell->comment))
-                                                    <p class="mt-1.5 text-[10px] text-aiu-ink-600 italic line-clamp-2 leading-tight"
-                                                       title="{{ $cell->comment }}">
-                                                        “{{ $cell->comment }}”
-                                                    </p>
-                                                @endif
-                                            @else
-                                                <span class="block mt-1.5 text-aiu-ink-400 text-xs italic">—</span>
-                                            @endif
-                                        </td>
-                                    @endforeach
+                                    {{-- Per-team Judge Scores: only judges who have *locked* a score for THIS team --}}
+                                    <td class="hidden lg:table-cell px-3 py-4 align-middle border-l-2 border-aiu-red/30">
+                                        @if ($myJudges->isEmpty())
+                                            <p class="text-aiu-ink-400 text-xs italic text-center">No locked scores yet</p>
+                                        @else
+                                            <div class="flex flex-wrap items-stretch gap-2">
+                                                @foreach ($myJudges as $j => $judge)
+                                                    @php $cell = $scoreLookup[$team->id][$judge->id] ?? null; @endphp
+                                                    <div class="flex-1 min-w-[120px] px-2.5 py-2 rounded-lg ring-1 ring-aiu-line/60 bg-white"
+                                                         title="{{ $judge->name }}{{ $judge->institution ? ' · '.$judge->institution : '' }}">
+                                                        <p class="text-[10px] uppercase tracking-[0.14em] text-aiu-ink-400 font-bold leading-tight">Judge {{ $j + 1 }}</p>
+                                                        <p class="font-heading text-[11px] font-semibold text-aiu-ink-900 truncate leading-tight mt-0.5">
+                                                            {{ $judge->name }}
+                                                        </p>
+                                                        @if ($cell)
+                                                            <p class="font-heading text-lg font-bold text-aiu-ink-900 tabular-nums leading-none mt-1.5">
+                                                                {{ number_format((float) $cell->weighted_total, 2) }}
+                                                            </p>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </td>
                                 </tr>
 
                                 {{-- Expanded detail row: per-judge per-criterion breakdown --}}
@@ -643,7 +644,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($judges as $judge)
+                                                        @forelse ($myJudges as $judge)
                                                             @php $cell = $scoreLookup[$team->id][$judge->id] ?? null; @endphp
                                                             <tr class="border-b border-aiu-line last:border-b-0 hover:bg-aiu-ink-50/40">
                                                                 <td class="px-4 py-3 align-middle">
@@ -687,7 +688,13 @@
                                                                     @endif
                                                                 </td>
                                                             </tr>
-                                                        @endforeach
+                                                        @empty
+                                                            <tr>
+                                                                <td colspan="{{ 3 + count($criteria) }}" class="px-6 py-10 text-center">
+                                                                    <p class="text-sm text-aiu-ink-600 italic">No judge has locked a score for this team yet.</p>
+                                                                </td>
+                                                            </tr>
+                                                        @endforelse
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -696,7 +703,7 @@
                                 @endif
                             @empty
                                 <tr>
-                                    <td colspan="{{ 6 + count($judges) }}" class="px-6 py-20 text-center">
+                                    <td colspan="7" class="px-6 py-20 text-center">
                                         <p class="font-heading text-xl font-bold text-aiu-ink-900">No teams registered yet</p>
                                         <p class="mt-2 text-sm text-aiu-ink-600">Once ACIE staff register teams in the admin panel, they will appear here in real time.</p>
                                     </td>
