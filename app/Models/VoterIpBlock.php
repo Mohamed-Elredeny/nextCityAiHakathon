@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 class VoterIpBlock extends Model
 {
     /** Max vote attempts (success OR rejection) per IP within the window. */
-    public const ATTEMPT_LIMIT = 5;
+    public const ATTEMPT_LIMIT = 3;
 
     /** Sliding window over which attempts are counted. */
     public const ATTEMPT_WINDOW_HOURS = 1;

@@ -39,6 +39,20 @@ class EditionResource extends Resource
                     ->required(),
                 Forms\Components\Toggle::make('is_active')
                     ->required(),
+
+                Forms\Components\Section::make('Voting controls (kill switches)')
+                    ->description('Use these to instantly stop or restrict People\'s Choice voting if you detect abuse.')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\Toggle::make('voting_paused')
+                            ->label('Pause voting')
+                            ->helperText('When ON, no new votes are accepted. Existing votes remain. Voters see a maintenance message.')
+                            ->onColor('danger'),
+                        Forms\Components\Toggle::make('vote_requires_login')
+                            ->label('Require login to vote')
+                            ->helperText('When ON, guests cannot vote. Only registered users (one vote each). Defeats IP-rotation attacks.')
+                            ->onColor('warning'),
+                    ]),
             ]);
     }
 

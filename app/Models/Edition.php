@@ -7,12 +7,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Edition extends Model
 {
-    protected $fillable = ['year', 'name', 'starts_at', 'ends_at', 'is_active'];
+    protected $fillable = [
+        'year', 'name', 'starts_at', 'ends_at', 'is_active',
+        'voting_paused', 'vote_requires_login',
+    ];
 
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
         'is_active' => 'boolean',
+        'voting_paused' => 'boolean',
+        'vote_requires_login' => 'boolean',
     ];
 
     public function themes(): HasMany

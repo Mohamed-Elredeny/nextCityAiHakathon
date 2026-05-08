@@ -37,6 +37,8 @@ class PeoplesChoiceVote extends Component
     public ?int $myVoteTeamId = null;
     public ?string $myVoteTeamName = null;
     public ?string $message = null;
+    public bool $votingPaused = false;
+    public bool $voteRequiresLogin = false;
 
     // Guest fields
     public string $voterName = '';
@@ -54,6 +56,12 @@ class PeoplesChoiceVote extends Component
         // Anchor a server-side timestamp so we can later require a minimum
         // dwell time before accepting a vote (blocks instant-fire scripts).
         $this->formOpenedAt = time();
+
+        // Surface the kill-switch flags so the view can show the right
+        // banner even before the user clicks anything.
+        $edition = Edition::active();
+        $this->votingPaused = (bool) $edition?->voting_paused;
+        $this->voteRequiresLogin = (bool) $edition?->vote_requires_login;
 
         // 1) Logged-in users: check by user_id
         if (Auth::check()) {
@@ -116,6 +124,23 @@ class PeoplesChoiceVote extends Component
         $this->message = null;
         $ip = (string) request()->ip();
         $ua = (string) request()->userAgent();
+
+        // ───── KILL SWITCH 1 · global voting pause ─────
+        $edition = Edition::active();
+        if ($edition && $edition->voting_paused) {
+            $this->logRejection($teamId, 'voting_paused');
+            $this->message = 'Voting is currently paused by the organizers. Please check back later.';
+            return;
+        }
+
+        // ───── KILL SWITCH 2 · login required ─────
+        // When enabled, only authenticated users can vote. This defeats
+        // IP-rotation attacks because each vote requires a verified account.
+        if ($edition && $edition->vote_requires_login && ! Auth::check()) {
+            $this->logRejection($teamId, 'login_required');
+            $this->message = 'Voting now requires a registered account. Please sign in to continue.';
+            return;
+        }
 
         // ───── ANTI-SPAM LAYER 0 · hard IP block ─────
         // If this IP has already exceeded the attempt threshold in the

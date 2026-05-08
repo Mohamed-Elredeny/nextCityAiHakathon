@@ -17,6 +17,21 @@
         </p>
     </header>
 
+    @if ($votingPaused)
+        <div class="max-w-xl mx-auto mb-6 px-5 py-4 rounded-xl card-3d bg-amber-50 ring-1 ring-amber-200 text-center">
+            <div class="text-amber-900 font-heading font-bold text-lg mb-1">⏸️ Voting paused</div>
+            <p class="text-sm text-amber-800">Voting has been paused by the organizers. Please check back later.</p>
+        </div>
+    @elseif ($voteRequiresLogin && !auth()->check())
+        <div class="max-w-xl mx-auto mb-6 px-5 py-4 rounded-xl card-3d bg-aiu-red-50 ring-1 ring-aiu-red/30 text-center">
+            <div class="text-aiu-red font-heading font-bold text-lg mb-1">🔐 Sign in required</div>
+            <p class="text-sm text-aiu-ink-700 mb-3">Voting now requires a registered account. Sign in to cast your vote.</p>
+            <a href="{{ route('login') }}" class="btn-aiu inline-flex items-center px-5 py-2 rounded-lg font-bold text-xs uppercase tracking-wider">
+                Sign in to vote
+            </a>
+        </div>
+    @endif
+
     @if ($message)
         <div class="max-w-md mx-auto mb-6 px-4 py-3 rounded-lg card-3d
                     {{ str_starts_with($message, 'Thanks') ? 'bg-gradient-to-r from-emerald-50 to-white text-emerald-800' : 'bg-aiu-red-50 text-aiu-red' }}
