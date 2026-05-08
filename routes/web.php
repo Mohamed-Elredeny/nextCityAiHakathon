@@ -17,6 +17,7 @@ use App\Livewire\PeoplesChoiceVote;
 use App\Livewire\ProfileView;
 use App\Livewire\PublicLeaderboard;
 use App\Livewire\RecruitingTeams;
+use App\Livewire\RestrictedAwardVote;
 use App\Livewire\TeamSubmissionPreview;
 use App\Livewire\TeamWorkspace;
 use App\Livewire\UserProfile;
@@ -44,6 +45,14 @@ Route::get('/vote', PeoplesChoiceVote::class)->name('vote');
 Route::get('/vote/qr', function () {
     return view('vote-qr', ['voteUrl' => url('/vote')]);
 })->name('vote.qr');
+
+// Restricted special-award voting (Best AI / Most Impactful).
+// Auth required. Eligibility (team_member / judge / mentor / super_admin)
+// is enforced inside the component so the page can render an explanatory
+// "not eligible" panel instead of bouncing the user.
+Route::get('/awards/vote', RestrictedAwardVote::class)
+    ->middleware('auth')
+    ->name('awards.vote');
 
 // Public attendance check-in (QR landing). Auth is enforced inside the
 // Livewire component itself so unauthenticated users get redirected to /login

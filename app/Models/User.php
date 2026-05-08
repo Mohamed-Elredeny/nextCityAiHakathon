@@ -143,6 +143,34 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->hasRole('super_admin');
     }
 
+    /**
+     * Restricted-award voting eligibility (Best AI / Most Impactful).
+     * Open to: registered users who are part of a team, OR judges, OR mentors,
+     * OR super_admins. A registered student with no team is excluded.
+     */
+    public function canVoteRestrictedAwards(): bool
+    {
+        if ($this->hasAnyRole(['judge', 'mentor', 'super_admin'])) {
+            return true;
+        }
+        return \App\Models\TeamMember::where('user_id', $this->id)->exists();
+    }
+
+    /**
+     * Audit label describing why this user is eligible. Stored on the vote
+     * row so admins can verify the population without re-deriving it later.
+     */
+    public function restrictedAwardVoterRole(): ?string
+    {
+        if ($this->hasRole('super_admin')) return 'super_admin';
+        if ($this->hasRole('judge'))       return 'judge';
+        if ($this->hasRole('mentor'))      return 'mentor';
+        if (\App\Models\TeamMember::where('user_id', $this->id)->exists()) {
+            return 'team_member';
+        }
+        return null;
+    }
+
     public function teamMembership()
     {
         return $this->hasOne(\App\Models\TeamMember::class);

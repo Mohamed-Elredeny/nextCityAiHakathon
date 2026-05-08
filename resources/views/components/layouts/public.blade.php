@@ -232,6 +232,9 @@
                 <a href="{{ route('home') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
                 <a href="{{ route('community') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Community</a>
                 @auth
+                    @if (auth()->user()->canVoteRestrictedAwards())
+                        <a href="{{ route('awards.vote') }}" class="px-3 py-2 rounded-lg text-aiu-red hover:text-aiu-red-700 hover:bg-aiu-red-50 transition font-bold">Vote awards</a>
+                    @endif
                     @if (auth()->user()->hasAnyRole(['team_leader', 'team_member']))
                         <a href="{{ route('workspace') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Workspace</a>
                     @endif
@@ -276,6 +279,9 @@
                 <a href="{{ route('home') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
                 <a href="{{ route('community') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Community</a>
                 @auth
+                    @if (auth()->user()->canVoteRestrictedAwards())
+                        <a href="{{ route('awards.vote') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-red hover:text-aiu-red-700 hover:bg-aiu-red-50 transition font-bold">Vote awards</a>
+                    @endif
                     @if (auth()->user()->hasAnyRole(['team_leader', 'team_member']))
                         <a href="{{ route('workspace') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Workspace</a>
                     @endif

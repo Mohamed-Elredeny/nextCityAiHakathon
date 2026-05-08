@@ -34,6 +34,7 @@ class Phase extends Model
     public const KEY_FINALIST_ANNOUNCE = 'finalist_announce';
     public const KEY_FINALS_SUBMISSION_WINDOW = 'finals_submission_window';
     public const KEY_FINALIST_PITCHING = 'finalist_pitching';
+    public const KEY_RESTRICTED_AWARD_VOTING = 'restricted_award_voting';
     public const KEY_AWARDS = 'awards';
 
     public function edition(): BelongsTo
