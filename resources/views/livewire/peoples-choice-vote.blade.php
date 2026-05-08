@@ -1,4 +1,10 @@
 <div class="max-w-7xl mx-auto px-6 py-12">
+    {{-- Page-wide honeypot: any bot scraping the form will eagerly fill this. --}}
+    <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+        <label>Website (leave blank)</label>
+        <input type="text" wire:model="hp_website" tabindex="-1" autocomplete="off">
+    </div>
+
     <header class="mb-8 text-center">
         <p class="inline-flex items-center gap-2 px-3 py-1 rounded-full chip-3d
                   text-aiu-red uppercase tracking-[0.22em] text-[10px] font-bold mb-4">
@@ -44,6 +50,11 @@
             <p class="mt-1 text-sm text-aiu-ink-600">Just so we count one vote per person.</p>
 
             <form wire:submit="startVoting" class="mt-5 space-y-4">
+                {{-- Honeypot — invisible to humans, naive bots fill it. --}}
+                <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+                    <label>Website (leave blank)</label>
+                    <input type="text" wire:model="hp_website" tabindex="-1" autocomplete="off">
+                </div>
                 <div>
                     <label class="block text-[10px] uppercase tracking-wider text-aiu-ink-400 font-bold mb-2">Your name</label>
                     <input type="text" wire:model="voterName" required class="input-3d w-full px-4 py-3 rounded-lg" placeholder="e.g. Mona Khaled">
