@@ -169,6 +169,14 @@ class TeamResource extends Resource
                 Tables\Columns\IconColumn::make('is_finalist')
                     ->label('Finalist')
                     ->boolean(),
+                Tables\Columns\IconColumn::make('is_hacker')
+                    ->label('Hacker')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-shield-exclamation')
+                    ->trueColor('danger')
+                    ->falseIcon('heroicon-o-minus')
+                    ->falseColor('gray')
+                    ->tooltip(fn (Team $record) => $record->is_hacker ? ('Reason: ' . ($record->hacker_reason ?? '—')) : null),
                 Tables\Columns\IconColumn::make('all_first_timers')
                     ->label('Newcomers')
                     ->boolean()
@@ -188,8 +196,61 @@ class TeamResource extends Resource
                         'disqualified' => 'Disqualified',
                     ]),
                 Tables\Filters\TernaryFilter::make('is_finalist')->label('Finalist'),
+                Tables\Filters\TernaryFilter::make('is_hacker')->label('Flagged as hacker'),
             ])
             ->actions([
+                Tables\Actions\Action::make('mark_hacker')
+                    ->label('Mark as hacker')
+                    ->icon('heroicon-o-shield-exclamation')
+                    ->color('danger')
+                    ->visible(fn (Team $record) => ! $record->is_hacker)
+                    ->form([
+                        Forms\Components\Textarea::make('hacker_reason')
+                            ->label('Reason (visible to admins only)')
+                            ->required()
+                            ->rows(3)
+                            ->placeholder('e.g. Vote stuffing detected — same IP voted 50+ times'),
+                    ])
+                    ->action(function (Team $record, array $data) {
+                        $record->forceFill([
+                            'is_hacker' => true,
+                            'hacker_reason' => $data['hacker_reason'],
+                            'hacker_marked_at' => now(),
+                            'hacker_marked_by' => \Illuminate\Support\Facades\Auth::id(),
+                        ])->save();
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Team flagged as hacker')
+                            ->body($record->name . ' — votes zeroed and judges score reduced by ' . (Team::HACKER_JUDGE_PENALTY * 100) . '%.')
+                            ->danger()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Flag team as hacker')
+                    ->modalDescription('This will: zero out all their People\'s Choice votes for ranking AND reduce their judges\' average by 10%. Public leaderboard will show a hacker badge.'),
+
+                Tables\Actions\Action::make('clear_hacker')
+                    ->label('Clear hacker flag')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('success')
+                    ->visible(fn (Team $record) => $record->is_hacker)
+                    ->requiresConfirmation()
+                    ->modalDescription('Restore this team to normal scoring. Original votes will count again.')
+                    ->action(function (Team $record) {
+                        $record->forceFill([
+                            'is_hacker' => false,
+                            'hacker_reason' => null,
+                            'hacker_marked_at' => null,
+                            'hacker_marked_by' => null,
+                        ])->save();
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Hacker flag cleared')
+                            ->body($record->name . ' is back to normal scoring.')
+                            ->success()
+                            ->send();
+                    }),
+
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

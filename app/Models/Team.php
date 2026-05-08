@@ -13,17 +13,27 @@ class Team extends Model
 {
     public const MAX_MEMBERS = 5;
 
+    /**
+     * When a team is flagged as hacker (vote manipulation), their People's
+     * Choice votes are zeroed AND their judges' average is reduced by this
+     * percentage on the leaderboard (10% by default).
+     */
+    public const HACKER_JUDGE_PENALTY = 0.10;
+
     protected $fillable = [
         'edition_id', 'theme_id', 'leader_id', 'name', 'slug',
         'tagline', 'logo_path', 'banner_path',
         'status', 'is_finalist', 'all_first_timers',
         'is_recruiting', 'recruitment_message', 'looking_for_skills', 'needed_roles',
+        'is_hacker', 'hacker_reason', 'hacker_marked_at', 'hacker_marked_by',
     ];
 
     protected $casts = [
         'is_finalist' => 'boolean',
         'all_first_timers' => 'boolean',
         'is_recruiting' => 'boolean',
+        'is_hacker' => 'boolean',
+        'hacker_marked_at' => 'datetime',
         'needed_roles' => 'array',
     ];
 

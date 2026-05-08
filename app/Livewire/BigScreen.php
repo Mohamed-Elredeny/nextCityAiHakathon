@@ -117,26 +117,42 @@ class BigScreen extends Component
             ->get()
             ->keyBy('team_id');
 
-        $voteCounts = PeoplesChoiceVote::query()
+        $rawVoteCounts = PeoplesChoiceVote::query()
             ->whereIn('team_id', $teamIds)
             ->selectRaw('team_id, COUNT(*) as votes')
             ->groupBy('team_id')
             ->pluck('votes', 'team_id');
-        $maxVotes = $voteCounts->max() ?: 0;
+
+        // Hacker-flagged teams contribute 0 votes for the popularity calc
+        $effectiveVoteCounts = $teams->mapWithKeys(function (Team $team) use ($rawVoteCounts) {
+            $raw = (int) ($rawVoteCounts[$team->id] ?? 0);
+            return [$team->id => $team->is_hacker ? 0 : $raw];
+        });
+        $maxVotes = $effectiveVoteCounts->max() ?: 0;
 
         return $teams
-            ->map(function (Team $team) use ($aggregates, $voteCounts, $maxVotes) {
+            ->map(function (Team $team) use ($aggregates, $rawVoteCounts, $effectiveVoteCounts, $maxVotes) {
                 $agg = $aggregates->get($team->id);
                 $judgesAvg = $agg ? round((float) $agg->avg_total, 2) : null;
-                $votes = (int) ($voteCounts[$team->id] ?? 0);
-                $popularity = $maxVotes > 0 ? round(($votes / $maxVotes) * 10, 2) : 0.0;
-                $finalScore = $judgesAvg !== null
-                    ? round($judgesAvg * self::JUDGES_WEIGHT + $popularity * self::POPULARITY_WEIGHT, 2)
+                $rawVotes = (int) ($rawVoteCounts[$team->id] ?? 0);
+                $effectiveVotes = (int) ($effectiveVoteCounts[$team->id] ?? 0);
+                $popularity = $maxVotes > 0 ? round(($effectiveVotes / $maxVotes) * 10, 2) : 0.0;
+
+                // 10% judges' avg penalty when team is flagged as hacker
+                $penalisedJudgesAvg = $judgesAvg;
+                if ($judgesAvg !== null && $team->is_hacker) {
+                    $penalisedJudgesAvg = round($judgesAvg * (1 - Team::HACKER_JUDGE_PENALTY), 2);
+                }
+
+                $finalScore = $penalisedJudgesAvg !== null
+                    ? round($penalisedJudgesAvg * self::JUDGES_WEIGHT + $popularity * self::POPULARITY_WEIGHT, 2)
                     : null;
 
                 $team->setAttribute('avg_total', $judgesAvg);
+                $team->setAttribute('avg_total_effective', $penalisedJudgesAvg);
                 $team->setAttribute('judge_count', $agg ? (int) $agg->judge_count : 0);
-                $team->setAttribute('vote_count', $votes);
+                $team->setAttribute('vote_count', $rawVotes);
+                $team->setAttribute('vote_count_effective', $effectiveVotes);
                 $team->setAttribute('final_score', $finalScore);
                 return $team;
             })
