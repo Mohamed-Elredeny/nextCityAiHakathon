@@ -22,7 +22,7 @@ class PublicLeaderboard extends Component
     public const JUDGES_WEIGHT = 0.90;
     public const POPULARITY_WEIGHT = 0.10;
 
-    public string $round = 'round1';
+    public string $round = 'finals';
     public ?int $expandedTeamId = null;
 
     public function toggleExpanded(int $teamId): void
@@ -32,13 +32,16 @@ class PublicLeaderboard extends Component
 
     public function mount(): void
     {
+        // Default landing tab is Finals — the event is now in/past finals.
+        // Only fall back to Round 1 if no finalists have been promoted yet,
+        // otherwise the finals tab would render an empty board which is
+        // confusing for visitors landing on the home page.
         $edition = Edition::active();
         if ($edition) {
-            $finalsActive = Phase::where('edition_id', $edition->id)
-                ->whereIn('key', [Phase::KEY_FINALIST_PITCHING, Phase::KEY_AWARDS])
-                ->where('state', Phase::STATE_ACTIVE)
+            $hasFinalists = Team::where('edition_id', $edition->id)
+                ->where('is_finalist', true)
                 ->exists();
-            $this->round = $finalsActive ? 'finals' : 'round1';
+            $this->round = $hasFinalists ? 'finals' : 'round1';
         }
     }
 
