@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\Models\Edition;
-use App\Models\JudgeAssignment;
 use App\Models\PeoplesChoiceVote;
 use App\Models\Phase;
 use App\Models\PitchSchedule;
@@ -65,19 +64,21 @@ class PublicLeaderboard extends Component
         $nowPitching = $edition ? $this->nowPitching() : null;
         $nextDeadline = $currentPhase?->ends_at;
 
-        $recusedJudgeIds = JudgeAssignment::query()
-            ->whereIn('team_id', $teams->pluck('id'))
-            ->where('round', $this->round)
-            ->where('recused', true)
-            ->pluck('judge_id')
-            ->unique()
-            ->values();
-
+        // Recusal is per-team: a judge recused from team A must still count
+        // for team B if they locked a score there. Filter pair-wise via
+        // NOT EXISTS rather than excluding the judge globally.
         $allScores = Score::query()
             ->whereIn('team_id', $teams->pluck('id'))
             ->where('round', $this->round)
             ->whereNotNull('locked_at')
-            ->when($recusedJudgeIds->isNotEmpty(), fn ($q) => $q->whereNotIn('judge_id', $recusedJudgeIds))
+            ->whereNotExists(function ($q) {
+                $q->select(\DB::raw(1))
+                    ->from('judge_assignments')
+                    ->whereColumn('judge_assignments.team_id', 'scores.team_id')
+                    ->whereColumn('judge_assignments.judge_id', 'scores.judge_id')
+                    ->whereColumn('judge_assignments.round', 'scores.round')
+                    ->where('judge_assignments.recused', true);
+            })
             ->with('judge:id,name,institution')
             ->get();
 
@@ -172,19 +173,19 @@ class PublicLeaderboard extends Component
 
         $teamIds = $teams->pluck('id');
 
-        // Exclude scores from judges who were later recused for this round.
-        $recusedJudgeIds = JudgeAssignment::query()
-            ->whereIn('team_id', $teamIds)
-            ->where('round', $this->round)
-            ->where('recused', true)
-            ->pluck('judge_id', 'team_id');
-
+        // Exclude scores from judges who were recused FROM THIS team for
+        // this round (per-pair, not global).
         $aggregates = Score::query()
             ->whereIn('team_id', $teamIds)
             ->where('round', $this->round)
             ->whereNotNull('locked_at')
-            ->when($recusedJudgeIds->isNotEmpty(), function ($q) use ($recusedJudgeIds) {
-                $q->whereNotIn('judge_id', $recusedJudgeIds->values()->unique()->all());
+            ->whereNotExists(function ($q) {
+                $q->select(\DB::raw(1))
+                    ->from('judge_assignments')
+                    ->whereColumn('judge_assignments.team_id', 'scores.team_id')
+                    ->whereColumn('judge_assignments.judge_id', 'scores.judge_id')
+                    ->whereColumn('judge_assignments.round', 'scores.round')
+                    ->where('judge_assignments.recused', true);
             })
             ->selectRaw('team_id, AVG(weighted_total) as avg_total, COUNT(*) as judge_count')
             ->groupBy('team_id')
