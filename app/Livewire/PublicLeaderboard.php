@@ -8,6 +8,7 @@ use App\Models\PeoplesChoiceVote;
 use App\Models\Phase;
 use App\Models\PitchSchedule;
 use App\Models\Score;
+use App\Models\Submission;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -102,6 +103,20 @@ class PublicLeaderboard extends Component
             ->orderBy('organization')
             ->get();
 
+        // Pitch schedule slots keyed by team_id for the active round
+        $teamSlots = PitchSchedule::query()
+            ->where('round', $this->round)
+            ->whereIn('team_id', $teams->pluck('id'))
+            ->get()
+            ->keyBy('team_id');
+
+        // Round 1 submission status keyed by team_id
+        $teamSubmissions = Submission::query()
+            ->where('round', $this->round)
+            ->whereIn('team_id', $teams->pluck('id'))
+            ->get(['team_id', 'status', 'submitted_at'])
+            ->keyBy('team_id');
+
         return view('livewire.public-leaderboard', [
             'teams' => $teams,
             'edition' => $edition,
@@ -113,6 +128,8 @@ class PublicLeaderboard extends Component
             'scoreLookup' => $scoreLookup,
             'showcaseTeams' => $showcaseTeams,
             'partners' => $partners,
+            'teamSlots' => $teamSlots,
+            'teamSubmissions' => $teamSubmissions,
             'criteria' => [
                 'business_viability'    => ['label' => 'Business Viability',                'weight' => 0.20],
                 'technical_feasibility' => ['label' => 'Technical Feasibility',             'weight' => 0.20],

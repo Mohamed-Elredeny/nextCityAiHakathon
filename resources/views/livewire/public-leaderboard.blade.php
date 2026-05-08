@@ -476,6 +476,38 @@
                                                             Leading
                                                         </span>
                                                     @endif
+
+                                                    {{-- Pitch slot (room + time) --}}
+                                                    @php $slot = $teamSlots[$team->id] ?? null; @endphp
+                                                    @if ($slot && $slot->scheduled_start)
+                                                        @php
+                                                            $slotEnd = $slot->scheduled_start->copy()->addMinutes(15);
+                                                        @endphp
+                                                        <span class="inline-flex items-center gap-1 text-[10px] tabular-nums px-1.5 py-0.5 rounded-md
+                                                                     bg-aiu-ink-100 text-aiu-ink-700 font-semibold ring-1 ring-aiu-line"
+                                                              title="Pitching {{ $slot->scheduled_start->format('M d') }} {{ $slot->scheduled_start->format('H:i') }}–{{ $slotEnd->format('H:i') }} in Room {{ $slot->room ?? '—' }}">
+                                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                            @if ($slot->room) Room {{ $slot->room }} · @endif{{ $slot->scheduled_start->format('H:i') }}–{{ $slotEnd->format('H:i') }}
+                                                        </span>
+                                                    @endif
+
+                                                    {{-- Submission status --}}
+                                                    @php $sub = $teamSubmissions[$team->id] ?? null; @endphp
+                                                    @if ($sub && $sub->status !== 'draft')
+                                                        <span class="inline-flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-md
+                                                                     bg-emerald-50 text-emerald-700 font-bold ring-1 ring-emerald-200"
+                                                              title="Submitted {{ $sub->submitted_at?->format('M d, H:i') }}">
+                                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                                            Submitted
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-md
+                                                                     bg-amber-50 text-amber-700 font-bold ring-1 ring-amber-200"
+                                                              title="Has not submitted yet">
+                                                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"/></svg>
+                                                            Not submitted
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </div>
                                             <a href="{{ route('teams.show', $team->slug) }}"
