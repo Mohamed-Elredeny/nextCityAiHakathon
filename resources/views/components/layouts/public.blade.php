@@ -230,6 +230,7 @@
             {{-- Desktop nav --}}
             <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
                 <a href="{{ route('home') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
+                <a href="{{ route('winners') }}" class="px-3 py-2 rounded-lg text-aiu-gold-600 hover:text-aiu-gold hover:bg-aiu-gold-50 transition font-bold">🏆 Winners</a>
                 <a href="{{ route('community') }}" class="px-3 py-2 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Community</a>
                 @auth
                     @if (auth()->user()->canVoteRestrictedAwards())
@@ -277,6 +278,7 @@
              class="md:hidden border-t border-aiu-line bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col gap-1 text-sm font-medium">
                 <a href="{{ route('home') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Leaderboard</a>
+                <a href="{{ route('winners') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-gold-600 hover:text-aiu-gold hover:bg-aiu-gold-50 transition font-bold">🏆 Winners</a>
                 <a href="{{ route('community') }}" @click="open = false" class="px-3 py-2.5 rounded-lg text-aiu-ink-700 hover:text-aiu-red hover:bg-aiu-red-50 transition">Community</a>
                 @auth
                     @if (auth()->user()->canVoteRestrictedAwards())

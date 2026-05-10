@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Attendance;
 use App\Models\AttendanceSession;
+use App\Models\AwardWinner;
 use App\Models\Edition;
 use App\Models\PeoplesChoiceVote;
 use App\Models\Phase;
@@ -84,9 +85,12 @@ class BigScreen extends Component
             ->whereDate('checked_in_at', $now->toDateString())
             ->count();
 
+        $winners = AwardWinner::forEditionKeyed($edition?->id);
+
         return view('livewire.big-screen', [
             'teams' => $teams,
             'edition' => $edition,
+            'winners' => $winners,
             'currentPhase' => $currentPhase,
             'nowPitching' => $nowPitching,
             'serverNow' => Carbon::now(),

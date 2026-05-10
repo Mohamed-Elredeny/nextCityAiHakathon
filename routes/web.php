@@ -17,6 +17,7 @@ use App\Livewire\PeoplesChoiceVote;
 use App\Livewire\ProfileView;
 use App\Livewire\PublicLeaderboard;
 use App\Livewire\RecruitingTeams;
+use App\Livewire\Winners;
 use App\Livewire\RestrictedAwardVote;
 use App\Livewire\TeamSubmissionPreview;
 use App\Livewire\TeamWorkspace;
@@ -28,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', PublicLeaderboard::class)->name('home');
 Route::get('/leaderboard', PublicLeaderboard::class)->name('leaderboard');
 Route::get('/screen', BigScreen::class)->name('screen');
+Route::get('/winners', Winners::class)->name('winners');
 
 // Public read-only team submission page (visible to voters/judges/mentors/anyone)
 Route::get('/teams/{slug}', TeamSubmissionPreview::class)->name('teams.show');

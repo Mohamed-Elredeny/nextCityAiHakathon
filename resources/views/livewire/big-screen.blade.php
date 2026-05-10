@@ -71,7 +71,9 @@
         </div>
     @endif
 
-    <main class="flex-1 px-12 py-8 overflow-hidden">
+    <main class="flex-1 px-12 py-8 overflow-y-auto">
+        @include('partials.winners-hero', ['winners' => $winners, 'size' => 'md'])
+
         <div class="flex items-center justify-between mb-6">
             <div>
                 <p class="text-aiu-red uppercase tracking-[0.28em] text-xs font-bold">Live Leaderboard</p>

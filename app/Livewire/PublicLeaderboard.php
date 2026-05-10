@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\AwardWinner;
 use App\Models\Edition;
 use App\Models\PeoplesChoiceVote;
 use App\Models\Phase;
@@ -136,9 +137,12 @@ class PublicLeaderboard extends Component
             ->get(['team_id', 'status', 'submitted_at'])
             ->keyBy('team_id');
 
+        $winners = AwardWinner::forEditionKeyed($edition?->id);
+
         return view('livewire.public-leaderboard', [
             'teams' => $teams,
             'edition' => $edition,
+            'winners' => $winners,
             'currentPhase' => $currentPhase,
             'nowPitching' => $nowPitching,
             'nextDeadline' => $nextDeadline,

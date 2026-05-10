@@ -83,6 +83,8 @@
 
     <section class="max-w-[100rem] mx-auto px-6 lg:px-8 pb-12">
 
+        @include('partials.winners-hero', ['winners' => $winners])
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
             @if ($nowPitching && $nowPitching->team)
                 <div class="card-3d lg:col-span-2 rounded-2xl p-5 lg:p-6 flex items-center gap-5
